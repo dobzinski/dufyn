@@ -1,6 +1,6 @@
 # DUFYN
 
-DUFYN stands for “Did yoU Find Your Network?”
+DUFYN stands for “Did yoU Find Your entire Network?”
 
 ## Network Discovery
 
