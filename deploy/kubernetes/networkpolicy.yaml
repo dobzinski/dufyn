@@ -1,0 +1,23 @@
+# Restrict database clients to Manager/Controller in the same namespace.
+# Requires a NetworkPolicy-capable CNI; external scanner access is unchanged.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dufyn-database-clients
+spec:
+  podSelector:
+    matchLabels:
+      app: dufyn-database
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: dufyn-manager
+    - podSelector:
+        matchLabels:
+          app: dufyn-controller
+    ports:
+    - protocol: TCP
+      port: 5432

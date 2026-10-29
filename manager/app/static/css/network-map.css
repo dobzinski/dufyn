@@ -1,0 +1,186 @@
+/* Read-only topology viewer; independent of form behavior. */
+.network-map-modal {
+    width: min(1440px, 96vw);
+    max-width: 100vw;
+    height: 90dvh;
+    max-height: 100dvh;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text-primary);
+}
+.network-map-modal[open] { display: flex; flex-direction: column; }
+.network-map-modal > .panel-body { flex: 1; min-height: 0; overflow-y: auto; }
+.network-map-modal > .network-map-header { flex-shrink: 0; }
+.network-map-modal::backdrop { background: rgba(0, 0, 0, 0.5); }
+.network-map-modal.is-fullscreen { width: 100vw; height: 100dvh; margin: 0; border-radius: 0; box-sizing: border-box; }
+.network-map-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.network-map-header h2 { margin: 0; font-size: 18px; }
+.network-map-header p { margin: 6px 0 0; color: var(--text-secondary); font-size: 13px; }
+.network-map-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--border); }
+.network-map-toolbar output { min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; }
+#network-map-message { margin: 16px 20px; }
+#network-map-message:empty { display: none; }
+.network-map-body { display: flex; flex: 1; min-height: 0; }
+.network-map-body[hidden] { display: none; }
+.network-map-viewport { flex: 1; min-width: 0; overflow: hidden; background: var(--background); touch-action: none; }
+#network-map-svg { display: block; width: 100%; height: 100%; min-height: 200px; cursor: move; }
+#network-map-svg.is-panning { cursor: move; }
+.network-map-edge { fill: none; stroke: var(--text-secondary); stroke-width: 1.5; opacity: 0.6; }
+.network-map-node { cursor: pointer; outline: none; }
+.network-map-node rect { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+.network-map-node:hover rect, .network-map-node:focus-visible rect, .network-map-node.is-selected rect { stroke: var(--primary-text); stroke-width: 3; }
+.network-map-node text { fill: var(--text-primary); font-family: inherit; font-size: 12px; pointer-events: none; }
+.network-map-node .network-map-node-title { font-size: 14px; font-weight: 600; }
+.network-map-node .network-map-node-type { fill: var(--text-secondary); }
+.network-map-status { fill: var(--text-muted); }
+.network-map-node[data-status="A"] .network-map-status { fill: var(--green); }
+.network-map-node[data-status="I"] .network-map-status { fill: var(--action-pink); }
+.network-map-body > .network-map-details { width: 240px; flex-shrink: 0; padding: 16px; border-left: 1px solid var(--border); overflow: auto; }
+.network-map-details h3 { margin: 0 0 12px; font-size: 15px; }
+.network-map-details p, .network-map-details dt { color: var(--text-secondary); font-size: 12px; }
+.network-map-details dl { margin: 0; }
+.network-map-details dt { margin-top: 12px; }
+.network-map-details dd { margin: 4px 0 0; font-size: 13px; overflow-wrap: anywhere; }
+/* The same detail list can be used in a compact read-only dialog. */
+dl.network-map-details { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 8px 12px; margin: 0; }
+dl.network-map-details dt, dl.network-map-details dd { margin: 0; }
+dl.network-map-details dt { font-weight: 700; }
+
+@media (max-width: 800px) {
+    .network-map-body { flex-direction: column; }
+    .network-map-viewport { min-height: 220px; }
+    .network-map-body > .network-map-details { width: auto; max-height: 150px; border-left: 0; border-top: 1px solid var(--border); }
+}
+
+.network-map-port-table { width: 100%; border-collapse: collapse; }
+.network-map-port-table th,
+.network-map-port-table td { padding: 6px 8px 6px 0; text-align: left; vertical-align: middle; }
+.network-map-port-table th { color: var(--text-secondary); font-size: 11px; font-weight: 500; }
+.network-map-port-table td:first-child { font-variant-numeric: tabular-nums; }
+
+.network-map-details dt.network-map-ports-title {
+    margin-top: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Physical view: raster background, editable marker positions and unplaced assets. */
+.physical-unplaced { width: 210px; padding: 16px; overflow: auto; border-right: 1px solid var(--border); flex-shrink: 0; }
+.physical-unplaced[hidden] { display: none; }
+.physical-unplaced h3 { margin: 0 0 8px; font-size: 14px; }
+.physical-unplaced p { color: var(--text-secondary); font-size: 12px; }
+#physical-assets { display: grid; gap: 8px; }
+.physical-asset-option { display: grid; gap: 4px; width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text-primary); text-align: left; cursor: move; }
+.physical-asset-option span { font-size: 11px; overflow-wrap: anywhere; }
+.physical-asset-option.is-pending { outline: 2px solid var(--primary); }
+#physical-delete-image[hidden], #physical-save[hidden], #physical-unplace[hidden] { display: none; }
+#physical-unplace { margin-top: 16px; }
+.network-map-node.is-draggable { cursor: move; }
+@media (max-width: 800px) {
+    .physical-unplaced { width: auto; max-height: 150px; border-right: 0; border-bottom: 1px solid var(--border); }
+    #physical-assets { grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); }
+}
+
+#physical-table th[colspan="2"],
+#physical-table td[colspan="2"] {
+    width: 88px;
+    min-width: 88px;
+    max-width: none;
+    padding-left: 8px;
+    padding-right: 8px;
+    white-space: nowrap;
+    text-align: right;
+}
+
+#network-map-svg image { cursor: inherit; }
+#network-map-viewport { cursor: move; }
+.physical-map-node.labels-hidden rect,
+.physical-map-node.labels-hidden text { display: none; }
+
+.physical-file-picker { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.physical-file-button { border-color: var(--primary-text); background: var(--surface); color: var(--primary-text); }
+#background-image-file-name { color: var(--text-secondary); font-size: 12px; overflow-wrap: anywhere; }
+#background-image-file[hidden] { display: none; }
+
+.physical-map-node rect { fill-opacity: 0.5; }
+
+/* Dragging the map or an asset must not start text selection. */
+.network-map-viewport,
+.network-map-viewport * {
+    -webkit-user-select: none;
+    user-select: none;
+}
+.physical-asset-option,
+.physical-asset-option * {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.physical-close {
+    --close-color: var(--primary-text);
+    border-color: var(--close-color);
+    color: var(--close-color);
+}
+.physical-close.has-unsaved-changes { --close-color: var(--action-pink); }
+.physical-close:hover:not(:disabled),
+.physical-close:focus-visible:not(:disabled) {
+    border-color: var(--close-color);
+    color: var(--close-color);
+    background: color-mix(in srgb, var(--close-color) 12%, var(--surface));
+}
+
+.map-table-action { color: var(--text-primary); }
+.map-table-action:hover:not(:disabled),
+.map-table-action:focus-visible:not(:disabled) { color: var(--primary-text); }
+.map-table-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-color: currentColor;
+    -webkit-mask: var(--map-table-icon) center / contain no-repeat;
+    mask: var(--map-table-icon) center / contain no-repeat;
+}
+.map-open-icon { --map-table-icon: url("/static/icons/clipboard.svg"); }
+.map-edit-icon { --map-table-icon: url("/static/icons/pencil.svg"); }
+.physical-editing .network-map-details > :not(#physical-unplace) { display: none; }
+.physical-editing #physical-unplace { margin-top: 0; }
+
+/* Icon controls retain accessible names and native tooltips. */
+.network-map-toolbar .map-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 8px; }
+.map-control-icon { display: inline-block; width: 20px; height: 20px; background: currentColor; pointer-events: none; -webkit-mask: var(--map-control-icon) center / contain no-repeat; mask: var(--map-control-icon) center / contain no-repeat; }
+[data-map-icon="zoom-out"] { --map-control-icon: url("/static/icons/zoom-out.svg"); }
+[data-map-icon="zoom-in"] { --map-control-icon: url("/static/icons/zoom-in.svg"); }
+[data-map-icon="resize"] { --map-control-icon: url("/static/icons/resize.svg"); }
+[data-map-icon="window-maximize"] { --map-control-icon: url("/static/icons/window-maximize.svg"); }
+[data-map-icon="label-off"] { --map-control-icon: url("/static/icons/label-off.svg"); }
+[data-map-icon="label"] { --map-control-icon: url("/static/icons/label.svg"); }
+[data-map-icon="download"] { --map-control-icon: url("/static/icons/download.svg"); }
+
+[data-map-icon="window-minimize"] { --map-control-icon: url("/static/icons/window-minimize.svg"); }
+
+.map-toolbar-separator { width: 1px; height: 24px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+.map-toolbar-separator[hidden] { display: none; }
+[data-map-icon="device-floppy"] { --map-control-icon: url("/static/icons/device-floppy.svg"); }
+
+.topology-actions-menu .row-action-primary { display: inline-flex; align-items: center; gap: 8px; }
+.row-actions-menu.topology-actions-menu button:disabled { opacity: 0.5; cursor: default; }
+
+.topology-actions-menu .map-edit-topology-icon { --map-table-icon: url("/static/icons/edit.svg"); }
+
+[data-map-icon="delete"] { --map-control-icon: url("/static/icons/trash.svg"); }
+
+/* Destructive image action retains the shared toolbar dimensions and icon. */
+#physical-delete-image {
+    color: var(--text-primary);
+    border-color: var(--border);
+}
+#physical-delete-image:hover:not(:disabled),
+#physical-delete-image:focus-visible:not(:disabled) {
+    background: color-mix(in srgb, var(--action-pink) 12%, var(--surface));
+    color: var(--action-pink);
+    border-color: var(--action-pink);
+}
+#physical-delete-image:focus-visible { outline-color: var(--action-pink); }
+#physical-delete-image:disabled { opacity: 0.45; cursor: default; }

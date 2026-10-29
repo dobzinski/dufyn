@@ -1,0 +1,248 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dufyn-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app: dufyn-manager
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: dufyn-manager
+        image: dufyn-manager:latest
+        imagePullPolicy: IfNotPresent
+        workingDir: /opt/dufyn
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-database
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-database
+              key: password
+        - name: PKI_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-pki
+              key: master-key
+              optional: true
+        - name: MANAGER_LOGIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-manager
+              key: username
+              optional: true
+        - name: MANAGER_LOGIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-manager
+              key: password
+              optional: true
+        - name: POSTGRES_APP_USER
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-app-database
+              key: username
+              optional: true
+        - name: POSTGRES_APP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-app-database
+              key: password
+              optional: true
+        volumeMounts:
+        - name: config
+          mountPath: /opt/dufyn/config.yaml
+          subPath: config.yaml
+          readOnly: true
+        - name: temporary
+          mountPath: /tmp
+        - name: controller-ca
+          mountPath: /opt/dufyn/certs
+          readOnly: true
+        ports:
+        - containerPort: 8000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 5
+          failureThreshold: 60
+          timeoutSeconds: 5
+        envFrom:
+        - configMapRef:
+            name: dufyn-database-config
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: '2'
+            memory: 1Gi
+      volumes:
+      - name: config
+        configMap:
+          name: dufyn-manager-config
+      - name: temporary
+        emptyDir: {}
+      - name: controller-ca
+        configMap:
+          name: dufyn-controller-ca
+          optional: true
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dufyn-manager
+spec:
+  selector:
+    app: dufyn-manager
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dufyn-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app: dufyn-controller
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: dufyn-controller
+        image: dufyn-controller:latest
+        imagePullPolicy: IfNotPresent
+        workingDir: /opt/dufyn
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-database
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-database
+              key: password
+        - name: PKI_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-pki
+              key: master-key
+              optional: true
+        - name: POSTGRES_APP_USER
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-app-database
+              key: username
+              optional: true
+        - name: POSTGRES_APP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dufyn-app-database
+              key: password
+              optional: true
+        volumeMounts:
+        - name: config
+          mountPath: /opt/dufyn/config.yaml
+          subPath: config.yaml
+          readOnly: true
+        - name: temporary
+          mountPath: /tmp
+        ports:
+        - containerPort: 8000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /ready
+            port: http
+          periodSeconds: 5
+          failureThreshold: 60
+          timeoutSeconds: 5
+        envFrom:
+        - configMapRef:
+            name: dufyn-database-config
+        - configMapRef:
+            name: dufyn-controller-config
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: '1'
+            memory: 512Mi
+      volumes:
+      - name: config
+        configMap:
+          name: dufyn-manager-config
+      - name: temporary
+        emptyDir: {}
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dufyn-controller
+spec:
+  selector:
+    app: dufyn-controller
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http

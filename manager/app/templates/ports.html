@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+    <details id="port-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div><h2>New</h2><p>Form for the discovery port</p></div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="port-form" class="form">
+                <label for="port-owner">Owner type</label>
+                <select id="port-owner" data-choice="owner" required><option value="">Select ...</option><option value="asset">Asset</option><option value="target">Target</option></select>
+                <fieldset data-when="owner=asset">
+                    <label for="port-asset">Asset</label>
+                    <select id="port-asset" name="asset_id" required><option value="">Select ...</option></select>
+                </fieldset>
+                <fieldset data-when="owner=target">
+                    <label for="port-target">Target</label>
+                    <select id="port-target" name="target_id" required><option value="">Select ...</option></select>
+                </fieldset>
+                <fieldset data-when="owner=asset&asset_id=*|owner=target&target_id=*" data-details>
+                <label for="port-number">Port</label>
+                <input id="port-number" name="port" type="number" min="1" max="65535" step="1" required>
+                <label for="port-protocol">Protocol</label>
+                <select id="port-protocol" name="protocol"><option value="TCP">TCP</option><option value="UDP">UDP</option></select>
+                <label for="port-service">Service (optional)</label>
+                <input id="port-service" name="service" maxlength="100" autocomplete="off">
+                </fieldset>
+                <div class="form-actions">
+                    <button class="secondary-button form-primary-button" type="submit" disabled data-button-icon="add">Add</button>
+                    <button data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage asset and target ports, services and discovery status.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="ports-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Site</th>
+                            <th>Owner</th>
+                            <th>Port</th>
+                            <th>Protocol</th>
+                            <th>Service</th>
+                            <th>Response</th>
+                            <th>Last Seen</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ports-table-body">
+                        <tr>
+                            <td colspan="10" class="table-message">Loading inventory...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="ports-message" class="message" role="status" aria-live="polite"></p>
+            <button id="ports-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/ports.js?v=14"></script>
+{% endblock %}

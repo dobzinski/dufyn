@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+    <details id="operating-system-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="operating-system-form-title">New</h2>
+                <p>Form for the operating system</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="operating-system-form" class="form">
+                <label for="operating-system-name">Name</label>
+                <input id="operating-system-name" type="text" name="name" required maxlength="100" autocomplete="off">
+                <div class="form-actions">
+                    <button id="operating-system-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                    <button id="operating-system-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="operating-system-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage operating systems and their asset usage.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="os-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Assets</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="table-message">Loading operating systems...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="os-message" class="message" role="status" aria-live="polite"></p>
+            <button id="os-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/os.js?v=1"></script>
+{% endblock %}

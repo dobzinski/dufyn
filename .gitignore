@@ -1,0 +1,19 @@
+# Local deployment secrets
+.env
+.env.*
+!.env.example
+
+# Generated backups, upgrades and recovery input
+dufyn-backup-*.zip
+/database/restore/*.sql
+/database/upgrade/*.sql
+
+# Local TLS certificates/keys; publish the instructions only
+/certs/*
+!/certs/README.md
+
+# Python caches and local virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/

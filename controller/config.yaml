@@ -1,0 +1,2 @@
+# /v1/public inventory queries are anonymous and read-only.
+# /v1/private operations require a registered scanner token.

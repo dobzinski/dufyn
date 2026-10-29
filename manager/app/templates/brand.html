@@ -1,0 +1,44 @@
+            <div class="brand">
+                {% if logo_animate %}
+                <svg class="logo" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animated network discovery globe and magnifying glass">
+                    <defs>
+                        <mask id="lens-gap" maskUnits="userSpaceOnUse" x="0" y="0" width="192" height="192" maskContentUnits="userSpaceOnUse">
+                        <rect width="192" height="192" fill="white"/>
+                        <!-- Cut away globe lines near the moving lens, maintaining a clear 6px gap. -->
+                        <g class="scan-motion" fill="black" stroke="black" stroke-width="18">
+                            <circle cx="123" cy="117" r="29"/>
+                            <path d="M144 139 L164 159" stroke-width="20"/>
+                        </g>
+                        </mask>
+                        <mask id="lens-highlight" maskUnits="userSpaceOnUse" x="0" y="0" width="192" height="192" maskContentUnits="userSpaceOnUse">
+                            <circle class="scan-motion" cx="123" cy="117" r="24" fill="white"/>
+                        </mask>
+                    </defs>
+                    <g class="globe" mask="url(#lens-gap)">
+                        <g id="logo-globe-lines">
+                        <circle cx="89" cy="91" r="69"/>
+                        <path d="M89 22 V160"/>
+                        <path d="M89 22 C53 48 53 134 89 160"/>
+                        <path d="M89 22 C125 48 125 134 89 160"/>
+                        <path d="M25 66 Q89 87 153 66"/>
+                        <path d="M20 91 H158"/>
+                        <path d="M25 116 Q89 95 153 116"/>
+                        </g>
+                    </g>
+                    <g class="globe-highlight" mask="url(#lens-highlight)">
+                        <use href="#logo-globe-lines"/>
+                    </g>
+                    <g class="magnifier scan-motion">
+                        <circle cx="123" cy="117" r="29"/>
+                        <path d="M144 139 L164 159" stroke-width="8"/>
+                        <path d="M109 108 Q114 99 125 99" stroke-width="4"/>
+                    </g>
+                </svg>
+                {% else %}
+                <div class="brand-icon"></div>
+                {% endif %}
+                <div>
+                    <div class="brand-title">DUFYN</div>
+                    <div class="brand-subtitle">Did you find your network?</div>
+                </div>
+            </div>

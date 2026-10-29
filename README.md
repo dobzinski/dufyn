@@ -26,7 +26,7 @@ monitoring API. PostgreSQL stores inventory, topology images and PKI records.
 ## Get started
 
 Follow [INSTALL.md](docs/INSTALL.md) for Docker Compose or Kubernetes installation,
-credentials, scanner enrollment, database migrations, backups and updates.
+credentials, scanner enrollment, database backups and updates.
 Docker deployment uses one private `deploy/docker/.env` for database credentials
 and the persistent PKI key. Publish `.env.example`, never the real `.env`.
 
@@ -59,7 +59,7 @@ controller/   Controller application
 database/     Fresh schema, restoration and updates
 deploy/       Docker Compose and Kubernetes manifests
 docs/         User and technical guides
-landpage/     Project page
 manager/      Manager application
+page/         Project page
 scanner/      Scanner application
 ```

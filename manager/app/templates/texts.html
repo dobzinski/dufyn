@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel form-panel-static">
+    <div class="panel-header"><div><h2>Process</h2><p>Validate, format, minify and convert structured text.</p></div></div>
+    <div class="panel-body panel-form">
+        <form id="tool-form" class="form" autocomplete="off" data-tool="texts" data-endpoint="/api/tools/texts" data-success="Processing completed.">
+            <label for="texts-format">Format</label>
+            <select id="texts-format" name="format" required><option value="">Select ...</option><option value="json">JSON</option><option value="yaml">YAML</option></select>
+            <label for="texts-action">Action</label>
+            <select id="texts-action" name="action" required><option value="">Select ...</option><option value="validate">Validate</option><option value="format">Format</option><option value="minify">Minify</option><option value="convert">Convert</option></select>
+            <p data-texts-hint class="form-hint">Select a format and action.</p>
+            <fieldset data-texts-indentation hidden disabled>
+                <label for="texts-indentation">Indentation</label>
+                <select id="texts-indentation" name="indentation"><option value="2">2 spaces</option><option value="4">4 spaces</option></select>
+            </fieldset>
+            <fieldset data-texts-sort hidden disabled>
+                <label class="scanner-network-option"><input id="texts-sort" type="checkbox" name="sort_keys">Sort keys</label>
+            </fieldset>
+            <label for="texts-from">Source</label>
+            <textarea id="texts-from" name="text" required rows="12" maxlength="262144" spellcheck="false" autocapitalize="off" aria-describedby="texts-hint"></textarea>
+            <p id="texts-hint" class="form-hint">Up to 256 KiB. YAML 1.2, one document at a time. Original content stays unchanged.</p>
+            {% set tool_action = "Process" %}
+            {% set tool_icon = "rocket" %}
+            {% include "tool-actions.html" %}
+        </form>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/js/tools.js?v=6"></script>{% endblock %}
+

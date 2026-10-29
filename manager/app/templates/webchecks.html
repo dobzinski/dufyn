@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <div class="panel-header"><div><h2>Data</h2><p>Results per target port. Inactive targets suspend checks; Last Seen identifies the last port check.</p></div></div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="webchecks-table" class="data-table">
+                    <thead><tr><th>#</th><th>Site</th><th>FQDN</th><th>Port</th><th>HTTP Status</th><th>Response Time</th><th>Last Seen</th><th>State</th></tr></thead>
+                    <tbody><tr><td colspan="8" class="table-message">No matching records found.</td></tr></tbody>
+                </table>
+            </div>
+            <p id="webchecks-message" class="message" role="status" aria-live="polite"></p>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/webchecks.js?v=11"></script>
+{% endblock %}

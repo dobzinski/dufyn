@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ page_title }} | DUFYN</title>
+        <link rel="stylesheet" href="/static/css/app.css?v=45">
+        <link rel="stylesheet" href="/static/css/table.css?v=11">
+        <link rel="stylesheet" href="/static/css/form.css?v=28">
+        <link rel="icon" type="image/png" href="/static/favicon/favicon.png">
+        {% if page in ['base64', 'subnet', 'time', 'certificate-inspector', 'texts'] %}<link rel="stylesheet" href="/static/css/tool-results.css?v=5">{% endif %}
+        {% block styles %}{% endblock %}
+    </head>
+    <body data-newers-days="{{ newers_days }}">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            {% include "brand.html" %}
+            <nav class="navigation" aria-label="Main navigation">
+                <div class="nav-group" role="group" aria-labelledby="nav-discovery">
+                    <h2 class="nav-group-title">
+                        <button id="nav-discovery" class="nav-group-toggle" type="button" aria-expanded="{{ 'true' if page in ['dashboard', 'assets', 'ports', 'certificates', 'webchecks', 'dns', 'ptr'] else 'false' }}" aria-controls="nav-discovery-items">
+                            Discovery
+                            <span class="nav-chevron" aria-hidden="true"></span>
+                        </button>
+                    </h2>
+                    <div id="nav-discovery-items" class="nav-group-items"{% if not (page in ['dashboard', 'assets', 'ports', 'certificates', 'webchecks', 'dns', 'ptr']) %} hidden{% endif %}>
+                    <a href="/" class="nav-item{% if page == 'dashboard' %} active{% endif %}">
+                        <span class="nav-icon dashboard-icon"></span>
+                        Dashboard
+                    </a>
+                    <a href="/assets" class="nav-item{% if page == 'assets' %} active{% endif %}">
+                        <span class="nav-icon assets-icon"></span>
+                        Assets
+                    </a>
+                    <a href="/targets" class="nav-item{% if page == 'targets' %} active{% endif %}">
+                        <span class="nav-icon targets-icon"></span>
+                        Targets
+                    </a>
+                    <a href="/ports" class="nav-item{% if page == 'ports' %} active{% endif %}">
+                        <span class="nav-icon ports-icon"></span>
+                        Ports
+                    </a>
+                    <a href="/certificates" class="nav-item{% if page == 'certificates' %} active{% endif %}">
+                        <span class="nav-icon certificates-icon"></span>
+                        Certificates
+                    </a>
+                    <a href="/web" class="nav-item{% if page == 'webchecks' %} active{% endif %}">
+                        <span class="nav-icon web-icon"></span>
+                        Web Checks
+                    </a>
+                    <a href="/dns" class="nav-item{% if page == 'dns' %} active{% endif %}">
+                        <span class="nav-icon dns-icon"></span>
+                        DNS Validation
+                    </a>
+                    <a href="/ptr" class="nav-item{% if page == 'ptr' %} active{% endif %}">
+                        <span class="nav-icon ptr-icon"></span>
+                        PTR
+                    </a>
+                    </div>
+                </div>
+                <div class="nav-group" role="group" aria-labelledby="nav-tools">
+                    <h2 class="nav-group-title">
+                        <button id="nav-tools" class="nav-group-toggle" type="button" aria-expanded="{{ 'true' if page in ['base64', 'subnet', 'time', 'certificate-inspector', 'texts', 'passwords', 'selfsignedcerts'] else 'false' }}" aria-controls="nav-tools-items">
+                            Tools
+                            <span class="nav-chevron" aria-hidden="true"></span>
+                        </button>
+                    </h2>
+                    <div id="nav-tools-items" class="nav-group-items"{% if not (page in ['base64', 'subnet', 'time', 'certificate-inspector', 'texts', 'passwords', 'selfsignedcerts']) %} hidden{% endif %}>
+                    <a href="/selfsigned" class="nav-item{% if page == 'selfsignedcerts' %} active{% endif %}">
+                        <span class="nav-icon selfsignedcerts-icon" aria-hidden="true"></span>
+                        Self-signed
+                    </a>
+                    <a href="/passwords" class="nav-item{% if page == 'passwords' %} active{% endif %}">
+                        <span class="nav-icon password-icon" aria-hidden="true"></span>
+                        Passwords
+                    </a>
+                    <a href="/inspector" class="nav-item{% if page == 'certificate-inspector' %} active{% endif %}">
+                        <span class="nav-icon inspector-icon" aria-hidden="true"></span>
+                        Inspector
+                    </a>
+                    <a href="/subnets" class="nav-item{% if page == 'subnet' %} active{% endif %}">
+                        <span class="nav-icon subnet-icon" aria-hidden="true"></span>
+                        Subnets
+                    </a>
+                    <a href="/base64" class="nav-item{% if page == 'base64' %} active{% endif %}">
+                        <span class="nav-icon base64-icon" aria-hidden="true"></span>
+                        Base64
+                    </a>
+                    <a href="/texts" class="nav-item{% if page == 'texts' %} active{% endif %}">
+                        <span class="nav-icon texts-icon" aria-hidden="true"></span>
+                        Texts
+                    </a>
+                    <a href="/time" class="nav-item{% if page == 'time' %} active{% endif %}">
+                        <span class="nav-icon time-icon" aria-hidden="true"></span>
+                        Time
+                    </a>
+                    </div>
+                </div>
+                <div class="nav-group" role="group" aria-labelledby="nav-topology">
+                    <h2 class="nav-group-title">
+                        <button id="nav-topology" class="nav-group-toggle" type="button" aria-expanded="{{ 'true' if page in ['physical', 'logical', 'links', 'diagrams', 'types'] else 'false' }}" aria-controls="nav-topology-items">
+                            Topology
+                            <span class="nav-chevron" aria-hidden="true"></span>
+                        </button>
+                    </h2>
+                    <div id="nav-topology-items" class="nav-group-items"{% if not (page in ['physical', 'logical', 'links', 'diagrams', 'types']) %} hidden{% endif %}>
+                    <a href="/diagrams" class="nav-item{% if page == 'diagrams' %} active{% endif %}">
+                        <span class="nav-icon diagrams-icon" aria-hidden="true"></span>
+                        Diagrams
+                    </a>
+                    <a href="/physical" class="nav-item{% if page == 'physical' %} active{% endif %}">
+                        <span class="nav-icon physical-icon" aria-hidden="true"></span>
+                        Physical
+                    </a>
+                    <a href="/logical" class="nav-item{% if page == 'logical' %} active{% endif %}">
+                        <span class="nav-icon logical-icon" aria-hidden="true"></span>
+                        Logical
+                    </a>
+                    <a href="/links" class="nav-item{% if page == 'links' %} active{% endif %}">
+                        <span class="nav-icon links-icon" aria-hidden="true"></span>
+                        Site Links
+                    </a>
+                    </div>
+                </div>
+                <div class="nav-group" role="group" aria-labelledby="nav-management">
+                    <h2 class="nav-group-title">
+                        <button id="nav-management" class="nav-group-toggle" type="button" aria-expanded="{{ 'true' if page in ['sites', 'scanners', 'targets', 'networks', 'services', 'types', 'os', 'settings', 'backup'] else 'false' }}" aria-controls="nav-management-items">
+                            Management
+                            <span class="nav-chevron" aria-hidden="true"></span>
+                        </button>
+                    </h2>
+                    <div id="nav-management-items" class="nav-group-items"{% if not (page in ['sites', 'scanners', 'targets', 'networks', 'services', 'types', 'os', 'settings', 'backup']) %} hidden{% endif %}>
+                    <a href="/sites" class="nav-item{% if page == 'sites' %} active{% endif %}">
+                        <span class="nav-icon sites-icon"></span>
+                        Sites
+                    </a>
+                    <a href="/networks" class="nav-item{% if page == 'networks' %} active{% endif %}">
+                        <span class="nav-icon networks-icon"></span>
+                        Networks
+                    </a>
+                    <a href="/scanners" class="nav-item{% if page == 'scanners' %} active{% endif %}">
+                        <span class="nav-icon scanners-icon"></span>
+                        Scanners
+                    </a>
+                    <a href="/services" class="nav-item{% if page == 'services' %} active{% endif %}">
+                        <span class="nav-icon services-icon"></span>
+                        Services
+                    </a>
+                    <a href="/types" class="nav-item{% if page == 'types' %} active{% endif %}">
+                        <span class="nav-icon types-icon" aria-hidden="true"></span>
+                        Types
+                    </a>
+                    <a href="/os" class="nav-item{% if page == 'os' %} active{% endif %}">
+                        <span class="nav-icon os-icon" aria-hidden="true"></span>
+                        Operating Systems
+                    </a>
+                    <a href="/backup" class="nav-item{% if page == 'backup' %} active{% endif %}">
+                        <span class="nav-icon backup-icon" aria-hidden="true"></span>
+                        Backup
+                    </a>
+                    <a href="/settings" class="nav-item{% if page == 'settings' %} active{% endif %}">
+                        <span class="nav-icon settings-icon"></span>
+                        Settings
+                    </a>
+                    </div>
+                </div>
+                {% if access_enabled %}
+                <form method="post" action="/auth/logout" class="logout-form">
+                    <button class="nav-item logout-link" type="submit"><span class="nav-icon logout-icon" aria-hidden="true"></span>Logout</button>
+                </form>
+                {% endif %}
+            </nav>
+            <div class="sidebar-footer">
+                <div class="api-status" id="controller-status" role="status" aria-label="Controller health: checking" title="Controller health: checking">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    Controller health
+                </div>
+                <div class="version">
+                    Version {{ version }}
+                </div>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar">
+                <div>
+                    <h1>{{ page_title }}</h1>
+                    <p>{{ page_description }}</p>
+                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-controls="sidebar" type="button" aria-label="Open navigation menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </header>
+            <section class="content">
+                {% if not inventory_connected %}
+                    <section class="panel" role="status">
+                        <div class="panel-body">
+                            Inventory data is not connected yet. Discovery records and administration are unavailable.
+                        </div>
+                    </section>
+                {% endif %}
+                {% block content %}
+                {% endblock %}
+            </section>
+            {% include "page-footer.html" %}
+        </main>
+        <div id="record-actions" class="row-actions-menu{% if page in ['passwords', 'scanners', 'sites', 'networks', 'targets', 'selfsignedcerts', 'dns', 'links', 'diagrams', 'logical', 'physical'] %} scanner-actions-menu{% endif %}{% if page in ['selfsignedcerts', 'links', 'diagrams', 'logical', 'physical'] %} topology-actions-menu{% endif %}" role="menu" aria-label="Record actions" hidden>
+            {% if page == 'dns' %}
+            <button data-action="add-target" class="row-action-custom" type="button" role="menuitem"><span class="targets-icon action-icon" aria-hidden="true"></span>Add to Target</button>
+            {% else %}
+            {% if page in ['sites', 'networks', 'targets'] %}
+            <button data-action="ports" class="row-action-custom" type="button" role="menuitem"><span class="ports-icon action-icon" aria-hidden="true"></span>Ports</button>
+            {% endif %}
+            {% if page == 'scanners' %}
+            <button data-action="view" class="row-action-custom" type="button" role="menuitem"><span class="certificate-view-icon action-icon" aria-hidden="true"></span>View</button>
+            <button data-action="networks" class="row-action-custom" type="button" role="menuitem"><span class="networks-icon action-icon" aria-hidden="true"></span>Networks</button>
+            <button data-action="generate-token" class="row-action-custom" type="button" role="menuitem"><span class="token-icon action-icon" aria-hidden="true"></span>Generate token</button>
+            {% endif %}
+            {% if page in ['links', 'diagrams', 'logical', 'physical'] %}
+            <button data-action="open-topology" class="row-action-custom" type="button" role="menuitem"><span class="map-table-icon map-open-icon" aria-hidden="true"></span>Open topology</button>
+            {% if page in ['logical', 'physical'] %}
+            {% if page == 'physical' %}
+            <button data-action="edit-topology" class="row-action-custom" type="button" role="menuitem"><span class="map-table-icon map-edit-topology-icon" aria-hidden="true"></span>Edit topology</button>
+            {% endif %}
+            <button data-action="mapping" class="row-action-custom" type="button" role="menuitem"><span class="associations-icon action-icon" aria-hidden="true"></span>Associations</button>
+            {% elif page == 'diagrams' %}
+            <button data-action="participants" class="row-action-custom" type="button" role="menuitem"><span class="participants-icon action-icon" aria-hidden="true"></span>Resources</button>
+            <button data-action="relations" class="row-action-custom" type="button" role="menuitem"><span class="associations-icon action-icon" aria-hidden="true"></span>Associations</button>
+            {% else %}
+            <button data-action="associations" class="row-action-custom" type="button" role="menuitem"><span class="associations-icon action-icon" aria-hidden="true"></span>Associations</button>
+            {% endif %}
+            {% endif %}
+            {% if page == 'passwords' %}
+            <button data-action="copy-account" class="row-action-custom" type="button" role="menuitem" data-button-icon="copy" hidden>Copy Account</button>
+            <button data-action="copy-password" class="row-action-custom" type="button" role="menuitem" data-button-icon="copy">Copy Password</button>
+            <button data-action="copy-url" class="row-action-custom" type="button" role="menuitem" data-button-icon="copy" hidden>Copy URL</button>
+            {% endif %}
+            {% if page == 'certificates' %}
+            <button data-action="view" class="row-action-custom" type="button" role="menuitem"><span class="certificate-view-icon action-icon" aria-hidden="true"></span>View</button>
+            {% endif %}
+            {% if page in ['selfsignedcerts'] %}
+            <button data-action="view" class="row-action-custom" type="button" role="menuitem"><span class="certificate-view-icon action-icon" aria-hidden="true"></span>View</button>
+            <button data-action="download-certificate" class="row-action-custom" type="button" role="menuitem"><span class="certificate-file-icon action-icon" aria-hidden="true"></span>Certificate (.crt)</button>
+            <button data-action="download-chain" class="row-action-custom" type="button" role="menuitem"><span class="fullchain-icon action-icon" aria-hidden="true"></span>Full chain (.pem)</button>
+            <button data-action="download-key" class="row-action-custom" type="button" role="menuitem"><span class="cacerts-icon action-icon" aria-hidden="true"></span>Private key (.key)</button>
+            {% else %}
+            <button data-action="edit" class="row-action-primary" type="button" role="menuitem" data-button-icon="edit">Edit</button>
+            {% endif %}
+            <button data-action="delete" class="row-action-secondary" type="button" role="menuitem" data-button-icon="delete">Delete</button>
+            {% endif %}
+        </div>
+        <dialog id="delete-modal" class="confirm-modal" aria-labelledby="delete-modal-title" aria-describedby="delete-modal-message">
+            <h2 id="delete-modal-title">Delete record?</h2>
+            <p id="delete-modal-message">Are you sure you want to delete this record? This action cannot be undone.</p>
+            <form method="dialog" class="form-actions">
+                <button class="secondary-button" value="cancel" autofocus data-button-icon="cancel">Cancel</button>
+                <button class="secondary-button form-delete-button" value="delete" data-button-icon="delete">Delete</button>
+            </form>
+        </dialog>
+        {% if access_enabled %}
+        <script src="/static/js/session.js?v=2" data-session="{{ session }}" defer></script>
+        {% endif %}
+        <script src="/static/js/app.js?v=3"></script>
+        <script src="/static/js/table.js?v=23"></script>
+        <script src="/static/js/form.js?v=20"></script>
+        {% if page in ['base64', 'subnet', 'time', 'certificate-inspector', 'texts'] %}<script src="/static/js/tool-results.js?v=5"></script>{% endif %}
+        {% block scripts %}
+        {% endblock %}
+    </body>
+</html>
+
+
+

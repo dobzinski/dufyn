@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel form-panel-static">
+    <div class="panel-header"><div><h2>Convert</h2><p>Convert Unix timestamps, ISO 8601 dates and time zones.</p></div></div>
+    <div class="panel-body panel-form">
+        <form id="tool-form" class="form" autocomplete="off" data-tool="time" data-endpoint="/api/tools/time" data-success="Conversion completed.">
+<label for="time-conversion">Conversion</label>
+<select id="time-conversion" name="conversion" required>
+    <option value="">Select ...</option>
+    <option value="to_date">Unix timestamp to Date</option>
+    <option value="to_timestamp">Date to Unix timestamp</option>
+    <option value="between_zones">Time zone to Time zone</option>
+</select>
+<fieldset data-time-unit>
+<label for="time-unit">Timestamp unit</label>
+<select id="time-unit" name="unit" required>
+    <option value="">Select ...</option>
+    <option value="seconds">Seconds</option>
+    <option value="milliseconds">Milliseconds</option>
+</select>
+</fieldset>
+<fieldset data-time-source hidden>
+<label for="time-source-zone">From time zone</label>
+<select id="time-source-zone" name="source_time_zone" disabled>
+    <option value="">Select ...</option>
+    {% for zone in timezones %}<option value="{{ zone.value }}">{{ zone.label }}</option>{% endfor %}
+</select>
+</fieldset>
+<label id="time-zone-label" for="time-zone">Time zone</label>
+<select id="time-zone" name="time_zone" required>
+    <option value="">Select ...</option>
+    {% for zone in timezones %}<option value="{{ zone.value }}">{{ zone.label }}</option>{% endfor %}
+</select>
+<label for="time-from">From</label>
+<input id="time-from" name="text" type="text" required maxlength="100" autocomplete="off" spellcheck="false" aria-describedby="time-hint">
+<p id="time-hint" class="form-hint">Select a conversion. Dates must include their UTC offset; the selected time zone controls the displayed local date.</p>
+{% set tool_action = "Convert" %}
+{% set tool_icon = "rocket" %}
+{% include "tool-actions.html" %}
+        </form>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/tools.js?v=6"></script>
+{% endblock %}
+

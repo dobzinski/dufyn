@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in | DUFYN</title>
+    <link rel="icon" type="image/png" href="/static/favicon/favicon.png">
+    <link rel="stylesheet" href="/static/css/app.css?v=45">
+    <link rel="stylesheet" href="/static/css/form.css?v=28">
+    <link rel="stylesheet" href="/static/css/login.css?v=6">
+</head>
+<body class="login-page">
+    <main class="login-card">
+        <header class="login-header">
+            <div class="brand-title">DUFYN</div>
+        </header>
+        <div class="login-body">
+        <h1>Sign in</h1>
+        <p class="login-description">Sign in to manage your network discovery.</p>
+        <form method="post" action="/login" id="login-form">
+            <input type="hidden" name="next" value="{{ next }}">
+            <label for="username">Username</label>
+            <input id="username" name="username" autocomplete="username" maxlength="256" required autofocus>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" maxlength="1024" required>
+            {% if error %}<p class="login-error" role="alert">{{ error }}</p>{% endif %}
+            <button class="secondary-button form-primary-button" type="submit"><span class="login-button-icon" aria-hidden="true"></span><span class="login-button-label">Sign in</span></button>
+        </form>
+        <p class="login-version">Version {{ version }}</p>
+        {% include "page-footer.html" %}
+        </div>
+    </main>
+    <script src="/static/js/login.js?v=2"></script>
+</body>
+</html>

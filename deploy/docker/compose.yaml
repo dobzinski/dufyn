@@ -1,0 +1,137 @@
+services:
+  postgres:
+    image: dufyn-database:${DUFYN_IMAGE_TAG}
+    build:
+      context: ../../database
+    container_name: dufyn-database
+    entrypoint: ["bash", "/opt/dufyn/database/control.sh"]
+    command: ["postgres"]
+    restart: unless-stopped
+    environment: &database_environment
+      POSTGRES_DB: "${POSTGRES_DB:?Set POSTGRES_DB in deploy/docker/.env}"
+      POSTGRES_USER: "${POSTGRES_USER:?Set POSTGRES_USER in deploy/docker/.env}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in deploy/docker/.env}"
+      POSTGRES_APP_USER: "${POSTGRES_APP_USER:-}"
+      POSTGRES_APP_PASSWORD: "${POSTGRES_APP_PASSWORD:-}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../database/restore:/opt/dufyn/database/restore:rw
+      - ../../database/upgrade:/opt/dufyn/database/upgrade:rw
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dufyn_backend
+    # Database is reachable only on the Docker network.
+
+  manager:
+    image: dufyn-manager:${DUFYN_IMAGE_TAG}
+    build:
+      context: ../../manager
+    container_name: dufyn-manager
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    mem_limit: "${MANAGER_MEMORY_LIMIT:-1g}"
+    environment:
+      <<: *database_environment
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      FORWARDED_ALLOW_IPS: "${FORWARDED_ALLOW_IPS:-127.0.0.1}"
+      MANAGER_LOGIN_USER: "${MANAGER_LOGIN_USER:-}"
+      MANAGER_LOGIN_PASSWORD: "${MANAGER_LOGIN_PASSWORD:-}"
+      PKI_MASTER_KEY: "${PKI_MASTER_KEY:?Set PKI_MASTER_KEY in deploy/docker/.env}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${MANAGER_BIND_ADDRESS:-0.0.0.0}:8080:8000"
+    volumes:
+      - ../../manager/config.yaml:/opt/dufyn/config.yaml:ro
+      - ../../certs:/opt/dufyn/certs:ro
+      - ../../manager/version.yaml:/opt/dufyn/version.yaml:ro
+      - ./.env:/opt/dufyn/backup-source/.env:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=3).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - dufyn_backend
+
+  controller:
+    image: dufyn-controller:${DUFYN_IMAGE_TAG}
+    container_name: dufyn-controller
+    build:
+      context: ../../controller
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    mem_limit: "${CONTROLLER_MEMORY_LIMIT:-512m}"
+    environment:
+      <<: *database_environment
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      FORWARDED_ALLOW_IPS: "${FORWARDED_ALLOW_IPS:-127.0.0.1}"
+      DISCOVERY_LEASE_SECONDS: "90"
+      PKI_MASTER_KEY: "${PKI_MASTER_KEY:?Set PKI_MASTER_KEY in deploy/docker/.env}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${CONTROLLER_BIND_ADDRESS:-0.0.0.0}:8081:8000"
+    volumes:
+      - ../../manager/config.yaml:/opt/dufyn/config.yaml:ro
+      - ../../controller/version.yaml:/opt/dufyn/version.yaml:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=3).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dufyn_backend
+
+  scanner:
+    image: dufyn-scanner:${DUFYN_IMAGE_TAG}
+    container_name: dufyn-scanner
+    build:
+      context: ../../scanner
+    profiles: ["scanner"]
+    depends_on:
+      controller:
+        condition: service_healthy
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    cap_add:
+      - NET_RAW
+    environment:
+      SCANNER_TOKEN: "${SCANNER_TOKEN:-}"
+      SCANNER_MODE: "${SCANNER_MODE:-}"
+      DNS_TSIG_SECRET: "${DNS_TSIG_SECRET:-}"
+    volumes:
+      - ../../scanner/config.yaml:/opt/dufyn/config.yaml:ro
+      - ../../certs:/opt/dufyn/certs:ro
+      - ../../scanner/version.yaml:/opt/dufyn/version.yaml:ro
+    networks:
+      - dufyn_backend
+
+volumes:
+  postgres_data:
+
+networks:
+  dufyn_backend:
+    name: dufyn_backend
+

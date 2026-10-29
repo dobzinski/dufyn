@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block styles %}
+<link rel="stylesheet" href="/static/css/settings-view.css?v=7">
+{% endblock %}
+{% block content %}
+<div class="settings-view" id="settings-view">
+    <section class="panel form-panel-static settings-overview">
+        <div class="panel-header">
+            <div><h2>Manager configuration</h2><p>Values loaded from the shared config.yaml when the Manager started, including defaults. To change these values, update config.yaml and restart the Manager. Also restart the Controller for Recent inventory and TLS policy changes, as indicated below.</p></div>
+        </div>
+        <div class="panel-body settings-toolbar">
+            <div class="settings-search" hidden>
+                <label for="settings-search">Find a parameter</label>
+                <input id="settings-search" type="search" placeholder="Search name, key or value..." autocomplete="off" aria-controls="settings-groups">
+            </div>
+        </div>
+    </section>
+    <p class="settings-results" id="settings-results" role="status" aria-live="polite"></p>
+    <div class="settings-grid" id="settings-groups">
+        {% for column in range(2) %}
+        <div class="settings-column">
+        {% for section in settings_sections %}
+        {% if section.column|default(0) == column %}
+        <section class="panel settings-card" style="--settings-order: {{ loop.index }}" aria-labelledby="settings-group-{{ loop.index }}">
+            <div class="panel-header"><div><h2 id="settings-group-{{ loop.index }}">{{ section.title }}</h2><p>{{ section.description }}</p></div></div>
+            <dl class="settings-parameters">
+                {% for row in section.rows %}
+                <div class="settings-parameter">
+                    <dt><span class="settings-label">{{ row.label }}</span><code>{{ row.key }}</code></dt>
+                    <dd>
+                        {% if row.kind == 'list' %}
+                        <ul class="settings-value-list">
+                            {% for item in row.value %}
+                            <li><span class="settings-value">{{ item.label }}</span><code>{{ item.value }}</code></li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <span class="{% if row.kind == 'status' %}status-badge {{ row.value }}{% else %}settings-value{% endif %}">{{ row.value }}</span>
+                        {% endif %}
+                        <p>{{ row.description }}</p>
+                    </dd>
+                </div>
+                {% endfor %}
+            </dl>
+        </section>
+        {% endif %}
+        {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+    <p class="settings-empty" id="settings-empty" hidden>No parameters match your search.</p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/settings-view.js?v=1"></script>
+{% endblock %}

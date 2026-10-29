@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel form-panel-static">
+    <div class="panel-header"><div><h2>Inspect</h2><p>Read certificate metadata, validity, subject alternative names and fingerprint.</p></div></div>
+    <div class="panel-body panel-form">
+        <form id="tool-form" class="form" autocomplete="off" data-tool="certificate" data-endpoint="/api/tools/certificate" data-success="Inspection completed.">
+<label for="certificate-pem">Certificate (PEM)</label>
+<textarea id="certificate-pem" name="pem" required rows="10" maxlength="262144" spellcheck="false" autocapitalize="off" aria-describedby="certificate-hint" placeholder="-----BEGIN CERTIFICATE-----"></textarea>
+<p id="certificate-hint" class="form-hint">Paste up to 16 public PEM certificates (256 KiB total), including BEGIN/END lines. Do not include private keys.</p>
+{% set tool_action = "Inspect" %}
+{% set tool_icon = "rocket" %}
+{% include "tool-actions.html" %}
+        </form>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/tools.js?v=6"></script>
+{% endblock %}
+

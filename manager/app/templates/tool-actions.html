@@ -1,0 +1,9 @@
+{% include "tool-result.html" %}
+{% if page == "texts" %}<p data-texts-stats class="form-hint" role="status" aria-live="polite"></p>{% endif %}
+<div class="form-actions">
+    <button class="secondary-button form-primary-button" data-tool-submit type="submit" data-button-icon="{{ tool_icon|default('convert') }}">{{ tool_action }}</button>
+    <button class="secondary-button" data-tool-copy type="button" data-button-icon="copy" disabled>Copy result</button>
+    {% if page == "texts" %}<button data-texts-use class="secondary-button" type="button" disabled>Use result as input</button>{% endif %}
+</div>
+<p class="message" data-tool-message role="status" aria-live="polite"></p>
+

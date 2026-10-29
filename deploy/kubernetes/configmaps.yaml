@@ -1,0 +1,106 @@
+# Non-sensitive configuration. Scanner token/TSIG and application credentials belong in secrets.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dufyn-database-config
+data:
+  POSTGRES_HOST: dufyn-database
+  POSTGRES_PORT: '5432'
+  POSTGRES_DB: dufyn
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dufyn-manager-config
+data:
+  config.yaml: |
+    access:
+      login: false
+      session: 3600
+    password:
+      manager: false
+    logo:
+      animate: false
+    controller:
+      ca_file: null # Optional PEM CA bundle mounted at /opt/dufyn/certs/ca.crt.
+      url: http://dufyn-controller:8000
+    tls:
+      expiration:
+        warning_days: 90
+        critical_days: 30
+      versions:
+        SSLv2: critical
+        SSLv3: critical
+        TLSv1: critical
+        TLSv1.1: critical
+        TLSv1.2: warning
+        TLSv1.3: valid
+      default: unknown
+    self-signed:
+      key_algorithm: RSA
+      rsa_key_size: 2048
+      signature_hash: SHA256
+    newers:
+      days: 5
+    time:
+      timezones:
+      - value: UTC
+        label: UTC
+      - value: America/Sao_Paulo
+        label: Sao Paulo
+      - value: America/New_York
+        label: New York
+      - value: Europe/London
+        label: London
+      - value: Asia/Tokyo
+        label: Tokyo
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dufyn-controller-config
+data:
+  DISCOVERY_LEASE_SECONDS: '90'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dufyn-scanner-config
+data:
+  config.yaml: |
+    controller:
+      ca_file: null # Optional PEM CA bundle mounted at /opt/dufyn/certs/ca.crt.
+      url: http://dufyn-controller:8000
+    execution:
+      mode: once
+      interval_seconds: 3600
+    discovery:
+      parallel_networks: 4
+      concurrency: 16
+      packets_per_second: 20
+      ping_timeout_seconds: 1
+      recheck:
+        enabled: true
+        timeout_seconds: 2
+    ptr:
+      enabled: false
+    targets:
+      enabled: true
+    udp:
+      quic:
+        enabled: true
+        ports:
+        - 443
+        - 8080
+        - 8443
+        timeout_seconds: 5
+    dns:
+      enabled: false
+      server: null
+      port: 53
+      zones:
+      - example.test
+      timeout_seconds: 5
+      transfer_lifetime_seconds: 60
+      api_timeout_seconds: 60
+      max_records: 100000

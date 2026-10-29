@@ -1,0 +1,25 @@
+new RecordPage(document.getElementById("port-form"), {
+    prerequisiteMessage: "Create an asset or target before adding ports.",
+    newers: {field: "first_seen"},
+    endpoint: "/api/ports",
+    table: "#ports-table",
+    message: "#ports-message",
+    retry: "#ports-retry",
+    sortColumn: "owner",
+    choices: (record) => ({owner: record.target_id ? "target" : "asset"}),
+    selects: [
+        {name: "asset_id", endpoint: "/api/ports/asset-options", placeholder: "Select ...", group: "network_group", groupKey: "network_group_id", required: false},
+        {name: "target_id", endpoint: "/api/ports/target-options", placeholder: "Select ...", group: "network_group", groupKey: "network_group_id", required: false},
+    ],
+    columns: [
+        { key: "site_name", label: "Site" },
+        { key: "owner", label: "Owner", value: (record) => record.target?.fqdn || [record.asset?.ip, record.asset?.name].filter(Boolean).join(" | ") },
+        { key: "port", label: "Port", type: "number" },
+        { key: "protocol", label: "Protocol", render: (record) => `<span class="status-badge ${record.protocol === 'UDP' ? 'udp' : 'tcp'}">${escapeHtml(record.protocol)}</span>` },
+        { key: "service", label: "Service", render: (record) => escapeHtml(record.service || "\u2014") },
+        { key: "response_time_ms", label: "Response", type: "number", render: record => record.response_time_ms == null ? "\u2014" : escapeHtml(record.response_time_ms.toFixed(1)) + " ms" },
+        { key: "last_seen_open", label: "Last Open", type: "date", hidden: true, render: (record) => record.last_seen_open ? formatDate(record.last_seen_open) : "\u2014" },
+        { key: "last_seen", label: "Last Seen", type: "date", render: (record) => record.last_seen ? formatDate(record.last_seen) : "\u2014" },
+        { key: "state", label: "Status", render: (record) => `<span class="status-badge ${escapeHtml(record.state)}">${escapeHtml(record.state)}</span>` },
+    ],
+});

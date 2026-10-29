@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Latest PTR answers, including IP addresses without a registered asset.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="ptr-table" class="data-table">
+                    <thead><tr>
+                        <th>#</th><th>Site</th><th>IP</th><th>Hostname</th><th>TTL</th>
+                        <th>Last Seen</th><th>Asset Status</th>
+                    </tr></thead>
+                    <tbody><tr><td colspan="7" class="table-message">Loading inventory...</td></tr></tbody>
+                </table>
+            </div>
+            <p id="ptr-message" class="message" role="status" aria-live="polite"></p>
+            <button id="ptr-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/ptr.js?v=2"></script>
+{% endblock %}

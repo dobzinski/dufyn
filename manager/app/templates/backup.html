@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel form-panel-static">
+    <div class="panel-header"><div><h2>Create backup</h2><p>Generate a ZIP archive and download it to your computer.</p></div></div>
+    <div class="panel-body panel-form">
+        <form id="backup-form" class="form" autocomplete="off">
+            <label for="backup-option">Content</label>
+            <select id="backup-option" required>
+                <option value="">Select ...</option>
+                <option value="all">All</option>
+                <option value="configuration">Configuration</option>
+                <option value="data">Data</option>
+            </select>
+            <p id="backup-hint" class="form-hint">Select the backup content.</p>
+            <p class="form-hint">The ZIP has no password. Configuration backups contain credentials; store them privately.</p>
+            <div class="form-actions">
+                <button id="backup-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="download">Download</button>
+            </div>
+            <p id="backup-message" class="message" role="status" aria-live="polite"></p>
+        </form>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/js/backup.js?v=2"></script>{% endblock %}

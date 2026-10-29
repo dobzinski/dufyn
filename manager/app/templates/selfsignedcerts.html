@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/network-map.css?v=28">
+{% endblock %}
+{% block content %}
+    <details id="pki-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="pki-form-title">New</h2>
+                <p>Create or import root CAs, intermediate CAs and server certificates.</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="pki-form" class="form" data-endpoint="/api/selfsignedcerts">
+                <label for="pki-mode">New / Import</label>
+                <select id="pki-mode" data-choice="mode" required>
+                    <option value="">Select ...</option>
+                    <option value="new">New</option>
+                    <option value="import">Import</option>
+                </select>
+                <fieldset data-when="mode=*" hidden disabled>
+                <label for="pki-name">Name</label>
+                <input id="pki-name" name="name" required maxlength="100" autocomplete="off">
+                <label for="pki-kind">Type</label>
+                <select id="pki-kind" name="kind" required>
+                    <option value="root">Root CA</option>
+                    <option value="intermediate">Intermediate CA</option>
+                    <option value="server">Server</option>
+                </select>
+                <fieldset data-when="kind=intermediate|kind=server" hidden disabled>
+                    <label for="pki-parent">Parent / Issuing CA</label>
+                    <select id="pki-parent" name="parent_id" required><option value="">Select ...</option></select>
+                </fieldset>
+                <fieldset data-when="mode=new">
+                <label for="pki-country">Country (C, optional)</label>
+                <input id="pki-country" name="country" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="off">
+                <label for="pki-state">State (ST, optional)</label>
+                <input id="pki-state" name="state" maxlength="128" autocomplete="off">
+                <label for="pki-locality">Locality (L, optional)</label>
+                <input id="pki-locality" name="locality" maxlength="128" autocomplete="off">
+                <label for="pki-organization">Organization (O, optional)</label>
+                <input id="pki-organization" name="organization" maxlength="128" autocomplete="off">
+                <label for="pki-unit">Organizational Unit (OU, optional)</label>
+                <input id="pki-unit" name="organizational_unit" maxlength="128" autocomplete="off">
+                <label for="pki-common-name">Common Name (CN)</label>
+                <input id="pki-common-name" name="common_name" required maxlength="64" autocomplete="off">
+                <label for="pki-days">Validity (days)</label>
+                <input id="pki-days" name="validity_days" type="number" min="1" max="36500" step="1" required value="3650">
+                <fieldset data-when="kind=server" hidden disabled>
+                <label for="pki-alt-names">Alternative names (SAN, optional): DNS names, wildcards or IPs, one per line</label>
+                <textarea id="pki-alt-names" name="alt_names" rows="5" maxlength="30000" placeholder="app.mydomain.com&#10;*.mydomain.com"></textarea>
+                </fieldset>
+                </fieldset>
+                <fieldset data-when="mode=import" hidden disabled>
+                    {% for field, label, accept in [
+                        ('certificate', 'Certificate (.crt / .pem / .cer, up to 256 KB)', '.crt,.pem,.cer,.der'),
+                        ('private_key', 'Private key (.key / .pem, up to 256 KB)', '.key,.pem,.der')
+                    ] %}
+                    <label for="pki-{{ field }}-button">{{ label }}</label>
+                    <input id="pki-{{ field }}-file" name="{{ field }}" type="file" accept="{{ accept }}" required hidden>
+                    <div class="physical-file-picker">
+                        <button id="pki-{{ field }}-button" class="secondary-button physical-file-button" type="button" aria-controls="pki-{{ field }}-file" data-pki-file="{{ field }}" data-button-icon="upload">Select file</button>
+                        <span id="pki-{{ field }}-name" aria-live="polite">No file selected</span>
+                    </div>
+                    {% endfor %}
+                    <label for="pki-key-password">Private key password (if encrypted)</label>
+                    <input id="pki-key-password" name="key_password" type="password" autocomplete="new-password" maxlength="1024">
+                </fieldset>
+                </fieldset>
+                <div class="form-actions">
+                    <button id="pki-submit" class="secondary-button form-primary-button" type="submit" disabled data-button-icon="add">Add</button>
+                    <button id="pki-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="pki-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div><h2>Data</h2><p>Browse immutable certificate authorities and server certificates.</p></div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="pki-table" class="data-table record-table">
+                    <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Common Name</th><th>Parent CA</th><th>Source</th><th>Remaining</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody><tr><td colspan="9" class="table-message">Loading certificates...</td></tr></tbody>
+                </table>
+            </div>
+            <p id="pki-list-message" class="message" role="status" aria-live="polite"></p>
+            <button id="pki-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    {% include "certificate-view-modal.html" %}
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/certificate-view.js?v=1"></script>
+    <script src="/static/js/selfsignedcerts.js?v=4"></script>
+{% endblock %}

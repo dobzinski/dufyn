@@ -1,0 +1,46 @@
+controller:
+  url: "http://controller:8000"
+  ca_file: null # Optional PEM CA file inside the container, e.g. /opt/dufyn/certs/ca.crt.
+  token: "" # Token issued for this scanner; SCANNER_TOKEN overrides it.
+execution:
+  mode: once # once: one full cycle and exit; continuous: repeat full cycles.
+  interval_seconds: 3600 # Continuous only: time between scheduled cycle starts; missed slots are skipped.
+discovery:
+  # Limits are per worker; threads and ping rate are shared across all networks.
+  parallel_networks: 4 # Maximum networks scanned simultaneously.
+  concurrency: 16 # Maximum simultaneous ping probes across all networks.
+  packets_per_second: 20 # Total ping sends per second, not per network.
+  ping_timeout_seconds: 1 # Initial probe timeout; tune for scanner-to-device latency.
+  recheck:
+    enabled: true # Immediately retry only the IP whose initial ping failed.
+    timeout_seconds: 2 # May be lower or higher than the initial timeout per site.
+
+# Global PTR switch; only networks with PTR enabled in Networks are queried.
+ptr:
+  enabled: false
+
+# Enable on only one scanner per Site; controls target hosts, ports, HTTP and certificates.
+targets:
+  enabled: true
+
+udp:
+  quic:
+    enabled: true # Enable QUIC/HTTP3 probes and certificate collection.
+    ports: [443, 8080, 8443] # Only assigned UDP ports in this list receive QUIC probes; [] skips all.
+    timeout_seconds: 5 # Maximum wait per QUIC probe, in seconds.
+
+# DNS stage runs after Discovery, ports and Targets; works without assigned networks.
+dns:
+  enabled: false # false
+  server: null # Authoritative DNS server IP; must permit AXFR from this scanner.
+  port: 53
+  zones: ["example.test"] # Example: ["company.local", "anotherdomain.local"]
+  timeout_seconds: 5
+  transfer_lifetime_seconds: 60
+  api_timeout_seconds: 60
+  max_records: 100000
+  # Optional TSIG authentication:
+  # tsig:
+  #   name: discovery-transfer
+  #   algorithm: hmac-sha256
+  #   secret_env: DNS_TSIG_SECRET

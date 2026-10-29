@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+    <details id="site-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="site-form-title">New</h2>
+                <p>Form for the discovery site</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="site-form" class="form">
+                <label for="site-name">Name</label>
+                <input id="site-name" type="text" name="name" required maxlength="100" autocomplete="off">
+                <label for="site-description">Description (optional)</label>
+                <input id="site-description" type="text" name="description" maxlength="255" autocomplete="off">
+                <div class="form-actions">
+                    <button id="site-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                    <button id="site-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="site-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage sites and their default discovery settings.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="sites-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Ports</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" class="table-message">Loading sites...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="sites-message" class="message" role="status" aria-live="polite"></p>
+            <button id="sites-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% include "port-selection.html" %}
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/port-selection.js?v=4"></script>
+    <script src="/static/js/sites.js?v=5"></script>
+{% endblock %}

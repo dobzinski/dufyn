@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel form-panel-static">
+    <div class="panel-header"><div><h2>Convert</h2><p>Convert UTF-8 text to Base64 or decode Base64 to text.</p></div></div>
+    <div class="panel-body panel-form">
+        <form id="base64-form" class="form" autocomplete="off">
+            <label for="base64-conversion">Conversion</label>
+            <select id="base64-conversion" required>
+                <option value="">Select ...</option>
+                <option value="encode">Text to Base64</option>
+                <option value="decode">Base64 to Text</option>
+            </select>
+            <label for="base64-from">Source</label>
+            <textarea id="base64-from" required rows="12" maxlength="1048576" spellcheck="false" autocapitalize="off" aria-describedby="base64-hint"></textarea>
+            <p id="base64-hint" class="form-hint">UTF-8 text, up to 1 MiB.</p>
+            {% set result_id = 'base64-to' %}
+            {% include "tool-result.html" %}
+            <div class="form-actions">
+                <button id="base64-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="rocket">Convert</button>
+                <button id="base64-copy" class="secondary-button" type="button" data-button-icon="copy" disabled>Copy result</button>
+                <button id="base64-use" class="secondary-button" type="button" disabled>Use result as input</button>
+            </div>
+            <p id="base64-message" class="message" role="status" aria-live="polite"></p>
+        </form>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/base64.js?v=8"></script>
+{% endblock %}
+

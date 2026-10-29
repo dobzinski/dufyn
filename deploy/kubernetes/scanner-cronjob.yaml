@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dufyn-scanner
+spec:
+  schedule: 0 * * * *
+  suspend: true
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          terminationGracePeriodSeconds: 60
+          containers:
+          - name: dufyn-scanner
+            image: dufyn-scanner:latest
+            imagePullPolicy: IfNotPresent
+            workingDir: /opt/dufyn
+            env:
+            - name: SCANNER_CONFIG
+              value: /etc/dufyn/config.yaml
+            - name: SCANNER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: dufyn-scanner
+                  key: token
+            - name: DNS_TSIG_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: dufyn-scanner
+                  key: tsig-secret
+                  optional: true
+            - name: SCANNER_WORKER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            volumeMounts:
+            - name: config
+              mountPath: /etc/dufyn/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: controller-ca
+              mountPath: /opt/dufyn/certs
+              readOnly: true
+            command:
+            - python
+            - -m
+            - app.main
+            securityContext:
+              runAsUser: 0
+              capabilities:
+                add:
+                - NET_RAW
+                drop:
+                - ALL
+              allowPrivilegeEscalation: false
+            resources:
+              requests:
+                cpu: 100m
+                memory: 64Mi
+              limits:
+                cpu: '1'
+                memory: 256Mi
+          volumes:
+          - name: config
+            configMap:
+              name: dufyn-scanner-config
+          - name: controller-ca
+            configMap:
+              name: dufyn-controller-ca
+              optional: true
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault

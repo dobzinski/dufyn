@@ -1,0 +1,12 @@
+# Fill/apply secrets.yaml separately before the first deployment.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dufyn
+resources:
+- namespace.yaml
+- pvc.yaml
+- configmaps.yaml
+- postgres.yaml
+- applications.yaml
+- scanner-cronjob.yaml
+- networkpolicy.yaml

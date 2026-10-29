@@ -1,0 +1,25 @@
+new RecordPage(document.getElementById("asset-form"), {
+    newers: {field: "first_seen"},
+    endpoint: "/api/assets",
+    table: "#assets-table",
+    message: "#assets-message",
+    retry: "#assets-retry",
+    sortColumn: "ip",
+    numberByInitialSort: true,
+    selects: [{
+        name: "site_id", endpoint: "/api/sites", placeholder: "Select ...",
+        emptyMessage: "Create a site before adding assets.",
+    }, {name: "asset_type_id", endpoint: "/api/types", placeholder: "Select ...", required: false},
+    {name: "operating_system_id", endpoint: "/api/os", placeholder: "Select ...", required: false}],
+    columns: [
+        { key: "site_name", label: "Site", render: (record) => escapeHtml(record.site_name) },
+        { key: "display_name", label: "Name", render: (record) => escapeHtml(record.display_name || "\u2014") },
+        { key: "discovered_hostname", label: "Hostname", render: (record) => escapeHtml(record.discovered_hostname || "\u2014") },
+        { key: "type_name", label: "Type", render: record => escapeHtml(record.type_name || "\u2014") },
+        { key: "operating_system_name", label: "OS", hidden: true, render: record => escapeHtml(record.operating_system_name || "\u2014") },
+        { key: "ip", label: "IP Address", type: "ip" },
+        { key: "latency_ms", label: "Latency", type: "number", render: (record) => record.latency_ms == null ? "\u2014" : escapeHtml(record.latency_ms) + " ms" },
+        { key: "last_seen", label: "Last Seen", type: "date", render: (record) => record.last_seen ? formatDate(record.last_seen) : "\u2014" },
+        { key: "status", label: "Status", render: (record) => `<span class="status-badge ${escapeHtml(record.status)}">${escapeHtml(record.status)}</span>` },
+    ],
+});

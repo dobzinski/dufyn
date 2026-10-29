@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+    <details id="target-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="target-form-title">New</h2>
+                <p>Form for the discovery target</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="target-form" class="form">
+                <label for="target-site">Site</label>
+                <select id="target-site" name="site_id" required><option value="">Loading sites...</option></select>
+                <label for="target-name">FQDN</label>
+                <input id="target-name" name="fqdn" required maxlength="253" placeholder="app.example.com" autocomplete="off">
+                <fieldset data-target-status hidden disabled>
+                <label for="target-status">Status</label>
+                <select id="target-status" name="status"><option value="U" selected>Unknown</option><option value="A">Active</option><option value="I">Inactive</option></select>
+                <p class="form-hint">Unknown is pinged and keeps web checks enabled without a reply. Inactive excludes the target from scanning.</p>
+                </fieldset>
+                <div class="form-actions">
+                    <button id="target-submit" class="secondary-button form-primary-button" type="submit" disabled data-button-icon="add">Add</button>
+                    <button id="target-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="target-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage target hostnames, site assignments and check status.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="targets-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Site</th>
+                            <th>FQDN</th>
+                            <th>Ports</th>
+                            <th>Latency</th>
+                            <th>Last Seen</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="9" class="table-message">Loading targets...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="targets-message" class="message" role="status" aria-live="polite"></p>
+            <button id="targets-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% include "port-selection.html" %}
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/port-selection.js?v=4"></script>
+    <script src="/static/js/targets.js?v=12"></script>
+{% endblock %}

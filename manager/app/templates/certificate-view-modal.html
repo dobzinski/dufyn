@@ -1,0 +1,34 @@
+    <dialog id="pki-view-modal" class="confirm-modal" aria-labelledby="pki-view-title">
+        <h2 id="pki-view-title">Certificate details</h2>
+        <dl class="network-map-details">
+            {% if page == 'certificates' %}
+            {% set detail_fields = [('site_name', 'Site'), ('owner', 'Owner'), ('port_label', 'Port'),
+                ('common_name', 'Common Name (CN)'), ('issuer_cn', 'Issuer'),
+                ('not_before', 'Valid From'), ('not_after', 'Valid Until'),
+                ('days_remaining', 'Remaining (days)'), ('status', 'Status'),
+                ('tls_version', 'TLS Version'), ('tls_status', 'TLS Classification'),
+                ('cipher', 'Cipher'), ('serial', 'Serial'), ('last_seen', 'Last Seen'), ('note', 'Notes')] %}
+            {% else %}
+            {% set detail_fields = [
+                ('name', 'Name'), ('type_label', 'Type'), ('parent_name', 'Parent CA'),
+                ('country', 'Country (C)'), ('state', 'State (ST)'), ('locality', 'Locality (L)'),
+                ('organization', 'Organization (O)'), ('organizational_unit', 'Organizational Unit (OU)'),
+                ('common_name', 'Common Name (CN)'), ('validity_days', 'Validity (days)'),
+                ('not_before', 'Valid From'), ('not_after', 'Valid Until'),
+                ('key_algorithm', 'Key Algorithm'), ('rsa_key_size', 'Key Size'),
+                ('signature_hash', 'Signature Hash'), ('serial', 'Serial'), ('created_at', 'Created')
+            ] %}
+            {% endif %}
+            {% for field, label in detail_fields %}
+            <dt>{{ label }}</dt>
+            <dd data-detail="{{ field }}"></dd>
+            {% endfor %}
+            <dt>Alternative Names (SAN)</dt>
+            <dd data-detail="alt_names"></dd>
+            <dt>Fingerprint (SHA-256)</dt>
+            <dd data-detail="fingerprint_sha256"></dd>
+        </dl>
+        <form method="dialog" class="form-actions">
+            <button class="secondary-button" value="close" data-button-icon="cancel">Close</button>
+        </form>
+    </dialog>

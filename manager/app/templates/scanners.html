@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/network-map.css?v=28">
+{% endblock %}
+{% block content %}
+    <details id="scanner-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="scanner-form-title">New</h2>
+                <p>Form for the discovery scanner</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="scanner-form" class="form">
+                <label for="scanner-site">Site</label>
+                <select id="scanner-site" name="site_id" required><option value="">Loading sites...</option></select>
+                <label for="scanner-name">Name</label>
+                <input id="scanner-name" name="name" required maxlength="100" autocomplete="off">
+                <label for="scanner-enabled">Enabled</label>
+                <select id="scanner-enabled" name="enabled"><option value="Y">Yes</option><option value="N">No</option></select>
+                <div class="form-actions">
+                    <button id="scanner-submit" class="secondary-button form-primary-button" type="submit" disabled data-button-icon="add">Add</button>
+                    <button id="scanner-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="scanner-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage site scanners and their discovery settings.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="scanners-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Site</th>
+                            <th>Name</th>
+                            <th>Networks</th>
+                            <th>Last Sync</th>
+                            <th>Created</th>
+                            <th>Enabled</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="8" class="table-message">Loading scanners...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="scanners-message" class="message" role="status" aria-live="polite"></p>
+            <button id="scanners-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    {% include "scanner-view-modal.html" %}
+    <dialog id="scanner-networks-modal" class="confirm-modal" aria-labelledby="scanner-networks-title" aria-describedby="scanner-networks-description">
+        <h2 id="scanner-networks-title">Networks</h2>
+        <p id="scanner-networks-description">Select the available networks in this scanner's site to discover.</p>
+        <form id="scanner-networks-form">
+            <div class="scanner-network-scroll" role="region" aria-label="Available site networks" tabindex="0">
+                <fieldset id="scanner-networks-list" class="scanner-network-list" aria-label="Authorized networks"></fieldset>
+            </div>
+            <p id="scanner-networks-message" class="message" role="status" aria-live="polite"></p>
+            <div class="form-actions">
+                <button id="scanner-networks-cancel" class="secondary-button" type="button" data-button-icon="cancel">Cancel</button>
+                <button id="scanner-networks-save" class="secondary-button form-primary-button" type="submit" disabled data-button-icon="save">Save</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="generate-token-modal" class="confirm-modal" aria-labelledby="generate-token-title" aria-describedby="generate-token-message">
+        <h2 id="generate-token-title">Generate token?</h2>
+        <p id="generate-token-message">Generate a new token for this scanner? Its previous token will stop working.</p>
+        <form method="dialog" class="form-actions">
+            <button class="secondary-button" value="cancel" autofocus data-button-icon="cancel">Cancel</button>
+            <button class="secondary-button form-primary-button" value="generate"><span class="token-icon action-icon" aria-hidden="true"></span>Generate token</button>
+        </form>
+    </dialog>
+    <dialog id="scanner-token-modal" class="confirm-modal" aria-labelledby="scanner-token-title" aria-describedby="scanner-token-description">
+        <h2 id="scanner-token-title">Scanner token</h2>
+        <p id="scanner-token-description">Copy this token to controller.token in scanner/config.yaml. It is shown only here and cannot be retrieved after closing.</p>
+        <div class="form">
+            <label for="scanner-token-value">Token</label>
+            <input id="scanner-token-value" type="text" readonly autocomplete="off" spellcheck="false">
+        </div>
+        <p id="scanner-token-copy-message" class="message" role="status" aria-live="polite"></p>
+        <form method="dialog" class="form-actions">
+            <button id="scanner-token-copy" class="secondary-button form-primary-button" type="button" autofocus data-button-icon="copy">Copy token</button>
+            <button class="secondary-button" value="close" data-button-icon="cancel">Close</button>
+        </form>
+    </dialog>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/scanner-view.js?v=3"></script>
+    <script src="/static/js/scanners.js?v=12"></script>
+{% endblock %}

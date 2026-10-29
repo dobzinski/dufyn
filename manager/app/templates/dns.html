@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>A, AAAA and CNAME records from the latest successful zone imports.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="dns-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Site</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>IP / Target</th>
+                            <th>TTL</th>
+                            <th>Last Seen</th>
+                            <th>PTR</th>
+                            <th>Target</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="10" class="table-message">No matching records found.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="dns-message" class="message" role="status" aria-live="polite"></p>
+        </div>
+    </section>
+    <dialog id="dns-target-modal" class="confirm-modal" aria-labelledby="dns-target-title">
+        <h2 id="dns-target-title">Add to Target</h2>
+        <form id="dns-target-form" class="form">
+            <label for="dns-target-site">Site</label>
+            <select id="dns-target-site" name="site_id" required><option value="">Select ...</option></select>
+            <label for="dns-target-fqdn">FQDN</label>
+            <input id="dns-target-fqdn" name="fqdn" readonly required>
+            <div id="dns-target-actions" class="form-actions">
+                <button id="dns-target-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add" disabled>Add</button>
+                <button id="dns-target-cancel" class="secondary-button form-secondary-button" type="button" data-button-icon="cancel">Cancel</button>
+                <button id="dns-target-close" class="secondary-button" type="button" data-button-icon="cancel" hidden>Close</button>
+            </div>
+            <p id="dns-target-message" class="message" role="status" aria-live="polite"></p>
+        </form>
+    </dialog>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/dns.js?v=15"></script>
+{% endblock %}

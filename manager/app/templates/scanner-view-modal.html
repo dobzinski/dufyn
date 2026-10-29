@@ -1,0 +1,17 @@
+    <dialog id="scanner-view-modal" class="confirm-modal" aria-labelledby="scanner-view-title">
+        <h2 id="scanner-view-title">Scanner details</h2>
+        <dl class="network-map-details">
+            {% for field, label in [('site_name', 'Site'), ('name', 'Name'), ('enabled', 'Enabled'),
+                ('networks_count', 'Networks'), ('last_seen', 'Last Seen'), ('config_received_at', 'Last Sync'),
+                ('config_updated_at', 'Configuration Updated'), ('created_at', 'Created')] %}
+            <dt>{{ label }}</dt>
+            <dd data-scanner-detail="{{ field }}"></dd>
+            {% endfor %}
+        </dl>
+        <h3>Configuration</h3>
+        <div id="scanner-view-config"></div>
+        <p id="scanner-view-message" class="message" role="status" aria-live="polite"></p>
+        <form method="dialog" class="form-actions">
+            <button class="secondary-button" value="close" data-button-icon="cancel">Close</button>
+        </form>
+    </dialog>

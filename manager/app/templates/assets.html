@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+    <details id="asset-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div><h2>New</h2><p>Form for the discovery asset</p></div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="asset-form" class="form">
+                <label for="asset-site">Site</label>
+                <select id="asset-site" name="site_id" required><option value="">Loading sites...</option></select>
+                <label for="asset-type">Type (optional)</label>
+                <select id="asset-type" name="asset_type_id"><option value="">Select ...</option></select>
+                <label for="asset-operating-system">Operating System (optional)</label>
+                <select id="asset-operating-system" name="operating_system_id"><option value="">Select ...</option></select>
+                <label for="asset-ip">IP Address</label>
+                <input id="asset-ip" name="ip" type="text" required placeholder="192.168.1.10" autocomplete="off">
+                <label for="asset-name">Name (optional)</label>
+                <input id="asset-name" name="display_name" type="text" maxlength="255" autocomplete="off">
+                <div class="form-actions">
+                    <button class="secondary-button form-primary-button" type="submit" data-button-icon="add" disabled>Add</button>
+                    <button class="secondary-button form-secondary-button" type="button" data-form-cancel data-button-icon="cancel" hidden>Cancel</button>
+                </div>
+                <p class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage asset addresses, types, operating systems and site assignments.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="assets-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Site</th>
+                            <th>Name</th>
+                            <th>Hostname</th>
+                            <th>Type</th>
+                            <th>IP Address</th>
+                            <th>Latency</th>
+                            <th>Last Seen</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assets-table-body">
+                        <tr>
+                            <td colspan="10" class="table-message">Loading inventory...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="assets-message" class="message" role="status" aria-live="polite"></p>
+            <button id="assets-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/assets.js?v=9"></script>
+{% endblock %}

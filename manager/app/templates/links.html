@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/network-map.css?v=28">
+{% endblock %}
+{% block content %}
+    <details id="links-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="links-form-title">New</h2>
+                <p>Form for logical connections between Sites</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="links-form" class="form">
+                <label for="links-name">Name</label>
+                <input id="links-name" name="name" required maxlength="100" autocomplete="off">
+                <div class="form-actions">
+                    <button id="links-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                    <button id="links-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage connections between assets in logical views across sites.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="links-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Views</th>
+                            <th>Assoc.</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" class="table-message">Loading site links...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="links-message" class="message" role="status" aria-live="polite"></p>
+            <button id="links-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    <dialog id="associations-modal" class="network-map-modal" aria-labelledby="associations-title">
+        <header class="network-map-header">
+            <div><h2 id="associations-title">Associations</h2><p id="associations-subtitle"></p></div>
+            <button id="associations-close" class="secondary-button" type="button">Close</button>
+        </header>
+        <div class="panel-body">
+            <details id="association-accordion" class="panel form-panel">
+                <summary class="panel-header form-summary">
+                    <div>
+                        <h2 id="association-form-title">New</h2>
+                        <p>Form for the association</p>
+                    </div>
+                    <span class="form-chevron" aria-hidden="true"></span>
+                </summary>
+                <div class="panel-body panel-form">
+                    <form id="association-form" class="form">
+                        <label for="source_view">Source View</label>
+                        <select id="source_view" data-choice="source_view" required><option value="">Select ...</option></select>
+                        <fieldset data-when="source_view=*" hidden disabled>
+                            <label for="association-source">Source Asset</label>
+                            <select id="association-source" name="source_id" required><option value="">Select ...</option></select>
+                            <label for="destination_view">Destination View</label>
+                            <select id="destination_view" data-choice="destination_view" required><option value="">Select ...</option></select>
+                            <fieldset data-when="source_view=*&destination_view=*" hidden disabled>
+                                <label for="association-destination">Destination Asset</label>
+                                <select id="association-destination" name="destination_id" required><option value="">Select ...</option></select>
+                            </fieldset>
+                        </fieldset>
+                        <div class="form-actions">
+                            <button id="association-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                            <button id="association-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                        </div>
+                        <p class="message" role="status" aria-live="polite"></p>
+                    </form>
+                </div>
+            </details>
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>Data</h2>
+                        <p>Browse and manage records</p>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-wrapper">
+                        <table id="association-table" class="data-table record-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>SRC Site</th>
+                                    <th>SRC View</th>
+                                    <th>SRC Asset</th>
+                                    <th>DST Site</th>
+                                    <th>DST View</th>
+                                    <th>DST Asset</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="9" class="table-message">Loading associations...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="association-list-message" class="message" role="status" aria-live="polite"></p>
+                    <button id="association-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+                </div>
+            </section>
+        </div>
+        <div id="association-actions" class="row-actions-menu" role="menu" aria-label="Association actions" hidden>
+            <button data-action="edit" class="row-action-primary" type="button" role="menuitem" data-button-icon="edit">Edit</button>
+            <button data-action="delete" class="row-action-secondary" type="button" role="menuitem" data-button-icon="delete">Delete</button>
+        </div>
+    </dialog>
+    <dialog id="network-map-modal" class="network-map-modal" aria-labelledby="network-map-title">
+        <header class="network-map-header">
+            <div><h2 id="network-map-title">Logical topology</h2><p id="network-map-subtitle"></p></div>
+            <button id="network-map-close" class="secondary-button" type="button" autofocus>Close</button>
+        </header>
+        <div class="network-map-toolbar" role="group" aria-label="Map controls">
+            <button id="network-map-zoom-out" class="secondary-button map-icon-button" type="button" aria-label="Zoom out" title="Zoom out"><span class="map-control-icon" data-map-icon="zoom-out" aria-hidden="true"></span></button>
+            <output id="network-map-zoom" aria-label="Zoom level">100%</output>
+            <button id="network-map-zoom-in" class="secondary-button map-icon-button" type="button" aria-label="Zoom in" title="Zoom in"><span class="map-control-icon" data-map-icon="zoom-in" aria-hidden="true"></span></button>
+            <button id="network-map-fit" class="secondary-button map-icon-button" type="button" aria-label="Fit" title="Fit"><span class="map-control-icon" data-map-icon="resize" aria-hidden="true"></span></button>
+            <button id="network-map-fullscreen" class="secondary-button map-icon-button" type="button" aria-label="Full screen" title="Full screen" aria-pressed="false"><span class="map-control-icon" data-map-icon="window-maximize" aria-hidden="true"></span></button>
+            <button id="network-map-download" class="secondary-button map-icon-button" type="button" aria-label="Download SVG" title="Download SVG"><span class="map-control-icon" data-map-icon="download" aria-hidden="true"></span></button>
+        </div>
+        <p id="network-map-message" class="message" role="status" aria-live="polite"></p>
+        <div id="network-map-body" class="network-map-body" hidden>
+            <div id="network-map-viewport" class="network-map-viewport">
+                <svg id="network-map-svg" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Logical asset hierarchy">
+                    <g id="network-map-scene"></g>
+                </svg>
+            </div>
+            <aside class="network-map-details" aria-label="Asset details">
+                <h3>Asset details</h3>
+                <p id="network-map-selection">Select an asset in the map.</p>
+                <dl id="network-map-details"></dl>
+            </aside>
+        </div>
+    </dialog>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/network-map.js?v=24"></script>
+    <script src="/static/js/link-map.js?v=5"></script>
+    <script src="/static/js/links.js?v=8"></script>
+{% endblock %}

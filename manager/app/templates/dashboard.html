@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="summary-grid">
+        <article class="summary-card">
+            <div class="card-label">
+                Assets
+            </div>
+            <div class="card-value" id="summary-assets">
+                &mdash;
+            </div>
+        </article>
+        <article class="summary-card">
+            <div class="card-label">Targets</div>
+            <div class="card-value" id="summary-targets">&mdash;</div>
+        </article>
+        <article class="summary-card">
+            <div class="card-label">
+                Ports
+            </div>
+            <div class="card-value" id="summary-ports">
+                &mdash;
+            </div>
+        </article>
+        <article class="summary-card">
+            <div class="card-label">
+                Certificates
+            </div>
+            <div class="card-value" id="summary-certificates">
+                &mdash;
+            </div>
+        </article>
+        <article class="summary-card attention" id="summary-attention-card">
+            <div class="card-label">
+                Need Attention
+            </div>
+            <div class="card-value" id="summary-attention">
+                &mdash;
+            </div>
+        </article>
+    </div>
+    <div class="dashboard-grid">
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Asset Status</h2>
+                    <p>Current discovered infrastructure</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="donut-chart" id="asset-status-chart">
+                    <div class="donut-center">
+                        <strong id="asset-chart-total">&mdash;</strong>
+                        <span>Total</span>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color active"></span>
+                        <span class="legend-label">Active</span>
+                        <strong id="asset-chart-active">&mdash;</strong>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color inactive"></span>
+                        <span class="legend-label">Inactive</span>
+                        <strong id="asset-chart-inactive">&mdash;</strong>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color unknown"></span>
+                        <span class="legend-label">Unknown</span>
+                        <strong id="asset-chart-unknown">&mdash;</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Certificate Status</h2>
+                    <p>Current certificate health</p>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="donut-chart" id="certificate-status-chart">
+                    <div class="donut-center">
+                        <strong id="certificate-chart-total">&mdash;</strong>
+                        <span>Total</span>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color valid"></span>
+                        <span class="legend-label">Valid</span>
+                        <strong id="certificate-chart-valid">&mdash;</strong>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color warning"></span>
+                        <span class="legend-label">Warning</span>
+                        <strong id="certificate-chart-warning">&mdash;</strong>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color critical"></span>
+                        <span class="legend-label">Critical</span>
+                        <strong id="certificate-chart-critical">&mdash;</strong>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color expired"></span>
+                        <span class="legend-label">Expired</span>
+                        <strong id="certificate-chart-expired">&mdash;</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="dashboard-grid dashboard-grid-status">
+        <section class="panel">
+            <div class="panel-header"><div><h2>Target Status</h2><p>Current check results</p></div></div>
+            <div class="chart-container">
+                <div class="donut-chart" id="target-chart">
+                    <div class="donut-center"><strong id="target-total">&mdash;</strong><span>Total</span></div>
+                </div>
+                <div class="chart-legend" id="target-legend">
+                    <div class="legend-item"><span class="legend-color active"></span><span class="legend-label">Active</span><strong>&mdash;</strong></div>
+                    <div class="legend-item"><span class="legend-color inactive"></span><span class="legend-label">Inactive</span><strong>&mdash;</strong></div>
+                    <div class="legend-item"><span class="legend-color unknown"></span><span class="legend-label">Unknown</span><strong>&mdash;</strong></div>
+                </div>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-header"><div><h2>Web Checks</h2><p>HTTP results per target port</p></div></div>
+            <div class="chart-container">
+                <div class="donut-chart" id="target-http-chart"><div class="donut-center"><strong id="target-http-total">&mdash;</strong><span>Total</span></div></div>
+                <div class="chart-legend" id="target-http-legend"></div>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-header"><div><h2>Port Status</h2><p>Last confirmed port states</p></div></div>
+            <div class="chart-container">
+                <div class="donut-chart" id="port-status-chart">
+                    <div class="donut-center"><strong id="port-chart-total">&mdash;</strong><span>Total</span></div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item"><span class="legend-color active"></span><span class="legend-label">Open</span><strong id="port-chart-open">&mdash;</strong></div>
+                    <div class="legend-item"><span class="legend-color inactive"></span><span class="legend-label">Closed</span><strong id="port-chart-closed">&mdash;</strong></div>
+                </div>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-header"><div><h2>Port Types</h2><p>TCP and UDP</p></div></div>
+            <div class="chart-container">
+                <div class="donut-chart" id="port-types-chart"><div class="donut-center"><strong id="port-types-total">&mdash;</strong><span>Total</span></div></div>
+                <div class="chart-legend" id="port-types-legend"></div>
+            </div>
+        </section>
+    </div>
+    <section class="panel top-ports-panel" aria-labelledby="newers-title">
+        <div class="panel-header">
+            <div>
+                <h2 id="newers-title">Newers</h2>
+                <p>{% if newers_days > 0 %}Data from the last {{ newers_days }} {{ 'day' if newers_days == 1 else 'days' }}{% else %}Recent inventory disabled (newers.days: 0){% endif %}</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <ol id="newers-chart" class="top-ports-chart" aria-label="Recent inventory counts by category"></ol>
+            <p id="newers-message" class="message" role="status">Loading recent inventory...</p>
+            <button id="newers-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    <section class="panel top-ports-panel" aria-labelledby="top-ports-title">
+        <div class="panel-header">
+            <div>
+                <h2 id="top-ports-title">Top 10 Discovered Ports</h2>
+                <p>Most frequent port/protocol pairs across assets and targets</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <ol id="top-ports-chart" class="top-ports-chart" aria-label="Discovered ports ranked by count"></ol>
+            <p id="top-ports-message" class="message" role="status">Loading discovered ports...</p>
+            <button id="top-ports-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    <section class="panel top-ports-panel" aria-labelledby="top-os-title">
+        <div class="panel-header">
+            <div>
+                <h2 id="top-os-title">Top 5 Operating Systems</h2>
+                <p>Most frequent operating systems across classified assets</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <ol id="top-os-chart" class="top-ports-chart" aria-label="Operating systems ranked by asset count"></ol>
+            <p id="top-os-message" class="message" role="status">Loading operating systems...</p>
+            <button id="top-os-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    <section class="panel attention-panel">
+        <div class="panel-header">
+            <div>
+                <h2>Certificate Attention</h2>
+                <p>Review certificates with potential issues</p>
+            </div>
+            <a href="/certificates" class="secondary-button">
+                View Certificates
+            </a>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="certificate-attention-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Site</th>
+                            <th>Owner</th>
+                            <th>Port</th>
+                            <th>Common Name</th>
+                            <th>Expiration</th>
+                            <th>Remaining</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="certificate-attention-body">
+                        <tr>
+                            <td colspan="7" class="table-message">Loading inventory...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section class="panel attention-panel" aria-labelledby="ptr-attention-title">
+        <div class="panel-header"><div>
+            <h2 id="ptr-attention-title">PTR Attention</h2>
+            <p>Review undiscovered PTR records, inactive assets and mismatched names</p>
+        </div></div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="ptr-attention-table" class="data-table">
+                    <thead><tr><th>Site</th><th>IP</th><th>PTR Names</th><th>Expected Names</th><th>Comparison</th><th>Attention</th><th>Checked</th></tr></thead>
+                    <tbody id="ptr-attention-body"><tr><td colspan="7" class="table-message">Loading PTR alerts...</td></tr></tbody>
+                </table>
+            </div>
+            <button id="ptr-attention-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    {% if inventory_connected %}
+        <script src="/static/js/dashboard.js?v=28"></script>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,2 @@
+<label class="tool-result-label" for="{{ result_id|default('tool-result') }}">Result</label>
+<textarea id="{{ result_id|default('tool-result') }}" data-tool-result data-result-view="{{ 'structured' if page == 'texts' else 'plain' if page == 'base64' else 'fields' }}" wrap="off" rows="14" readonly spellcheck="false" aria-label="Tool result"></textarea>

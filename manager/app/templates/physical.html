@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/network-map.css?v=28">
+{% endblock %}
+{% block content %}
+    <details id="physical-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="physical-form-title">New</h2>
+                <p>Form for the physical topology</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="physical-form" class="form">
+                <label for="physical-site">Site</label>
+                <select id="physical-site" name="site_id" required><option value="">Select ...</option></select>
+                <label for="physical-name">Name</label>
+                <input id="physical-name" type="text" name="name" required maxlength="100" autocomplete="off">
+                <label for="background-image-file-button">Image (optional, PNG or JPEG, up to 10 MB)</label>
+                <input id="background-image-file" name="image" type="file" accept="image/png,image/jpeg" hidden>
+                <div class="physical-file-picker">
+                    <button id="background-image-file-button" class="secondary-button physical-file-button" type="button" aria-controls="background-image-file">Select image</button>
+                    <span id="background-image-file-name" aria-live="polite">No file selected</span>
+                </div>
+                <div class="form-actions">
+                    <button id="physical-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                    <button id="physical-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="physical-form-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header"><div><h2>Data</h2><p>Physical views, images and associated assets.</p></div></div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="physical-table" class="data-table record-table">
+                    <thead><tr><th>#</th><th>Site</th><th>Name</th><th>Assoc.</th><th>Pos.</th><th>Image</th><th>Updated</th><th>Actions</th></tr></thead>
+                    <tbody><tr><td colspan="8" class="table-message">No matching records found.</td></tr></tbody>
+                </table>
+            </div>
+            <p id="physical-message" class="message" role="status" aria-live="polite"></p>
+            <button id="physical-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    {% include 'topology-mapping-modal.html' %}
+    <dialog id="network-map-modal" class="network-map-modal" aria-labelledby="network-map-title">
+        <header class="network-map-header">
+            <div><h2 id="network-map-title">Physical topology</h2><p id="network-map-subtitle"></p></div>
+            <button id="network-map-close" class="secondary-button" type="button" autofocus>Close</button>
+        </header>
+        <div class="network-map-toolbar" role="group" aria-label="Map controls">
+            <button id="network-map-zoom-out" class="secondary-button map-icon-button" type="button" aria-label="Zoom out" title="Zoom out"><span class="map-control-icon" data-map-icon="zoom-out" aria-hidden="true"></span></button>
+            <output id="network-map-zoom" aria-label="Zoom level">100%</output>
+            <button id="network-map-zoom-in" class="secondary-button map-icon-button" type="button" aria-label="Zoom in" title="Zoom in"><span class="map-control-icon" data-map-icon="zoom-in" aria-hidden="true"></span></button>
+            <button id="network-map-fit" class="secondary-button map-icon-button" type="button" aria-label="Fit" title="Fit"><span class="map-control-icon" data-map-icon="resize" aria-hidden="true"></span></button>
+            <button id="network-map-fullscreen" class="secondary-button map-icon-button" type="button" aria-label="Full screen" title="Full screen" aria-pressed="false"><span class="map-control-icon" data-map-icon="window-maximize" aria-hidden="true"></span></button>
+            <button id="physical-labels" class="secondary-button map-icon-button" type="button" aria-label="Hide labels" title="Hide labels" aria-pressed="true"><span class="map-control-icon" data-map-icon="label" aria-hidden="true"></span></button>
+            <button id="network-map-download" class="secondary-button map-icon-button" type="button" aria-label="Download SVG" title="Download SVG"><span class="map-control-icon" data-map-icon="download" aria-hidden="true"></span></button>
+            <span id="physical-save-separator" class="map-toolbar-separator" aria-hidden="true" hidden></span>
+            <button id="physical-delete-image" class="secondary-button map-icon-button" type="button" aria-label="Delete image" title="Delete image" hidden><span class="map-control-icon" data-map-icon="delete" aria-hidden="true"></span></button>
+            <button id="physical-save" class="secondary-button map-icon-button" type="button" aria-label="Save" title="Save" hidden><span class="map-control-icon" data-map-icon="device-floppy" aria-hidden="true"></span></button>
+        </div>
+        <p id="network-map-message" class="message" role="status" aria-live="polite"></p>
+        <div id="network-map-body" class="network-map-body" hidden>
+            <aside id="physical-unplaced" class="physical-unplaced" aria-label="Unplaced assets" hidden>
+                <h3>Assets to place</h3><p>Drag an asset onto the image, or select it and click its location.</p>
+                <div id="physical-assets"></div>
+            </aside>
+            <div id="network-map-viewport" class="network-map-viewport">
+                <svg id="network-map-svg" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Physical asset positions">
+                    <g id="network-map-scene"></g>
+                </svg>
+            </div>
+            <aside class="network-map-details" aria-label="Asset details">
+                <button id="physical-unplace" class="secondary-button" type="button" hidden>Remove position</button>
+                <h3>Asset details</h3>
+                <p id="network-map-selection">Select an asset in the map.</p>
+                <dl id="network-map-details"></dl>
+            </aside>
+        </div>
+    </dialog>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/mapping.js?v=6"></script>
+    <script src="/static/js/topology-views.js?v=1"></script>
+    <script src="/static/js/network-map.js?v=24"></script>
+    <script src="/static/js/physical.js?v=30"></script>
+{% endblock %}

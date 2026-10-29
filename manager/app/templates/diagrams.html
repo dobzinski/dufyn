@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/network-map.css?v=28">
+{% endblock %}
+{% block content %}
+    <details id="diagrams-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="diagrams-form-title">New</h2>
+                <p>Form for the diagram</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="diagrams-form" class="form">
+                <label for="diagrams-name">Name</label>
+                <input id="diagrams-name" name="name" required maxlength="100" autocomplete="off">
+                <div class="form-actions">
+                    <button id="diagrams-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                    <button id="diagrams-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage diagrams of assets, targets and their associations.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="diagrams-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Resources</th>
+                            <th>Assoc.</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" class="table-message">Loading diagrams...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="diagrams-message" class="message" role="status" aria-live="polite"></p>
+            <button id="diagrams-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    <dialog id="diagram-participants-modal" class="network-map-modal" aria-labelledby="diagram-participants-title">
+        <header class="network-map-header">
+            <div><h2 id="diagram-participants-title">Resources</h2><p id="diagram-participants-subtitle"></p></div>
+            <button id="diagram-participants-close" class="secondary-button" type="button">Close</button>
+        </header>
+        <div class="panel-body">
+            <details id="member-accordion" class="panel form-panel">
+                <summary class="panel-header form-summary">
+                    <div><h2 id="member-form-title">New</h2><p>Form for the resource</p></div>
+                    <span class="form-chevron" aria-hidden="true"></span>
+                </summary>
+                <div class="panel-body panel-form">
+                    <form id="member-form" class="form">
+                        <label for="member_site">Site</label>
+                        <select id="member_site" data-choice="member_site" required><option value="">Select ...</option></select>
+                        <fieldset data-when="member_site=*" hidden disabled>
+                            <label for="member_kind">Type</label>
+                            <select id="member_kind" data-choice="member_kind" required>
+                                <option value="">Select ...</option><option value="asset">Asset</option><option value="target">Target</option>
+                            </select>
+                            <fieldset data-when="member_site=*&member_kind=*" hidden disabled>
+                                <label for="member_record">Asset / Target</label>
+                                <select id="member_record" data-choice="member_record" required><option value="">Select ...</option></select>
+                            </fieldset>
+                        </fieldset>
+                        <input type="hidden" name="asset_id" disabled>
+                        <input type="hidden" name="target_id" disabled>
+                        <div class="form-actions">
+                            <button id="member-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                            <button id="member-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                        </div>
+                        <p class="message" role="status" aria-live="polite"></p>
+                    </form>
+                </div>
+            </details>
+            <section class="panel">
+                <div class="panel-header"><div><h2>Resources</h2><p>Browse and manage records</p></div></div>
+                <div class="panel-body">
+                    <div class="table-wrapper">
+                        <table id="member-table" class="data-table record-table">
+                            <thead><tr><th>#</th><th>Site</th><th>Type</th><th>Name</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                            <tbody><tr><td colspan="7" class="table-message">Loading resources...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <p id="member-list-message" class="message" role="status" aria-live="polite"></p>
+                    <button id="member-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+                </div>
+            </section>
+        </div>
+        <div id="member-actions" class="row-actions-menu" role="menu" aria-label="Resource actions" hidden>
+            <button data-action="delete" class="row-action-secondary" type="button" role="menuitem" data-button-icon="delete">Delete</button>
+        </div>
+    </dialog>
+    <dialog id="diagram-relations-modal" class="network-map-modal" aria-labelledby="diagram-relations-title">
+        <header class="network-map-header">
+            <div><h2 id="diagram-relations-title">Associations</h2><p id="diagram-relations-subtitle"></p></div>
+            <button id="diagram-relations-close" class="secondary-button" type="button">Close</button>
+        </header>
+        <div class="panel-body">
+            <details id="relation-accordion" class="panel form-panel">
+                <summary class="panel-header form-summary">
+                    <div><h2 id="relation-form-title">New</h2><p>Form for the association</p></div>
+                    <span class="form-chevron" aria-hidden="true"></span>
+                </summary>
+                <div class="panel-body panel-form">
+                    <form id="relation-form" class="form">
+                        <label for="source_member">Source</label>
+                        <select id="source_member" data-choice="source_member" required><option value="">Select ...</option></select>
+                        <fieldset data-when="source_member=*" hidden disabled>
+                            <label for="destination_member">Destination</label>
+                            <select id="destination_member" data-choice="destination_member" required><option value="">Select ...</option></select>
+                        </fieldset>
+                        <input type="hidden" name="source_asset_id" disabled>
+                        <input type="hidden" name="source_target_id" disabled>
+                        <input type="hidden" name="destination_asset_id" disabled>
+                        <input type="hidden" name="destination_target_id" disabled>
+                        <div class="form-actions">
+                            <button id="relation-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                            <button id="relation-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                        </div>
+                        <p class="message" role="status" aria-live="polite"></p>
+                    </form>
+                </div>
+            </details>
+            <section class="panel">
+                <div class="panel-header"><div><h2>Associations</h2><p>Browse and manage records</p></div></div>
+                <div class="panel-body">
+                    <div class="table-wrapper">
+                        <table id="relation-table" class="data-table record-table">
+                            <thead><tr><th>#</th><th>SRC Site</th><th>SRC Type</th><th>SRC Name</th><th>DST Site</th><th>DST Type</th><th>DST Name</th><th>Created</th><th>Actions</th></tr></thead>
+                            <tbody><tr><td colspan="9" class="table-message">Loading associations...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <p id="relation-list-message" class="message" role="status" aria-live="polite"></p>
+                    <button id="relation-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+                </div>
+            </section>
+        </div>
+        <div id="relation-actions" class="row-actions-menu" role="menu" aria-label="Association actions" hidden>
+            <button data-action="edit" class="row-action-primary" type="button" role="menuitem" data-button-icon="edit">Edit</button>
+            <button data-action="delete" class="row-action-secondary" type="button" role="menuitem" data-button-icon="delete">Delete</button>
+        </div>
+    </dialog>
+    <dialog id="network-map-modal" class="network-map-modal" aria-labelledby="network-map-title">
+        <header class="network-map-header">
+            <div><h2 id="network-map-title">Diagram</h2><p id="network-map-subtitle"></p></div>
+            <button id="network-map-close" class="secondary-button" type="button" autofocus>Close</button>
+        </header>
+        <div class="network-map-toolbar" role="group" aria-label="Map controls">
+            <button id="network-map-zoom-out" class="secondary-button map-icon-button" type="button" aria-label="Zoom out" title="Zoom out"><span class="map-control-icon" data-map-icon="zoom-out" aria-hidden="true"></span></button>
+            <output id="network-map-zoom" aria-label="Zoom level">100%</output>
+            <button id="network-map-zoom-in" class="secondary-button map-icon-button" type="button" aria-label="Zoom in" title="Zoom in"><span class="map-control-icon" data-map-icon="zoom-in" aria-hidden="true"></span></button>
+            <button id="network-map-fit" class="secondary-button map-icon-button" type="button" aria-label="Fit" title="Fit"><span class="map-control-icon" data-map-icon="resize" aria-hidden="true"></span></button>
+            <button id="network-map-fullscreen" class="secondary-button map-icon-button" type="button" aria-label="Full screen" title="Full screen" aria-pressed="false"><span class="map-control-icon" data-map-icon="window-maximize" aria-hidden="true"></span></button>
+            <button id="network-map-download" class="secondary-button map-icon-button" type="button" aria-label="Download SVG" title="Download SVG"><span class="map-control-icon" data-map-icon="download" aria-hidden="true"></span></button>
+        </div>
+        <p id="network-map-message" class="message" role="status" aria-live="polite"></p>
+        <div id="network-map-body" class="network-map-body" hidden>
+            <div id="network-map-viewport" class="network-map-viewport">
+                <svg id="network-map-svg" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Diagram associations">
+                    <g id="network-map-scene"></g>
+                </svg>
+            </div>
+            <aside class="network-map-details" aria-label="Details">
+                <h3>Details</h3>
+                <p id="network-map-selection">Select an item in the map.</p>
+                <dl id="network-map-details"></dl>
+            </aside>
+        </div>
+    </dialog>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/network-map.js?v=24"></script>
+    <script src="/static/js/diagram-map.js?v=4"></script>
+    <script src="/static/js/diagrams.js?v=6"></script>
+{% endblock %}

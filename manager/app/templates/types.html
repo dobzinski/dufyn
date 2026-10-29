@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+    <details id="type-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="type-form-title">New</h2>
+                <p>Form for the asset type</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="type-form" class="form">
+                <label for="type-name">Name</label>
+                <input id="type-name" type="text" name="name" required maxlength="100" autocomplete="off">
+                <div class="form-actions">
+                    <button id="type-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                    <button id="type-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="type-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage asset classifications and their usage.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="types-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Assets</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="4" class="table-message">Loading types...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="types-message" class="message" role="status" aria-live="polite"></p>
+            <button id="types-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/types.js?v=3"></script>
+{% endblock %}

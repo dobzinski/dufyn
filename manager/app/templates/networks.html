@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+    <details id="network-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div><h2>New</h2><p>Form for the discovery network</p></div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="network-form" class="form">
+                <label for="network-site">Site</label>
+                <select id="network-site" name="site_id" required><option value="">Loading sites...</option></select>
+                <label for="network-cidr">IPv4 CIDR</label>
+                <input id="network-cidr" name="cidr" required maxlength="18" placeholder="192.168.1.0/24" autocomplete="off">
+                <label for="network-name">Name (optional)</label>
+                <input id="network-name" name="name" maxlength="100" autocomplete="off">
+                <label for="network-enabled">Enabled</label>
+                <select id="network-enabled" name="enabled"><option value="Y">Yes</option><option value="N">No</option></select>
+                <label for="network-ptr">PTR</label>
+                <select id="network-ptr" name="ptr_enabled" aria-describedby="network-ptr-hint"><option value="N">No</option><option value="Y">Yes</option></select>
+                <p id="network-ptr-hint" class="form-hint">Query reverse DNS for this network, including IPs without ping replies.</p>
+                <label for="network-port-mode">Port Type</label>
+                <select id="network-port-mode" name="port_mode" aria-describedby="network-port-hint"><option value="I">Inherit site ports</option><option value="C">Custom network ports</option></select>
+                <p id="network-port-hint" class="form-hint">Manage port assignments using Ports in the network actions menu.</p>
+                <div class="form-actions">
+                    <button class="secondary-button form-primary-button" type="submit" disabled data-button-icon="add">Add</button>
+                    <button data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header"><div><h2>Data</h2><p>Manage site networks, address ranges and scan settings.</p></div></div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="networks-table" class="data-table record-table">
+                    <thead><tr><th>#</th><th>Site</th><th>CIDR</th><th>Name</th><th>Type</th><th>Ports</th><th>Created</th><th>PTR</th><th>Enabled</th><th>Actions</th></tr></thead>
+                    <tbody><tr><td colspan="10" class="table-message">Loading networks...</td></tr></tbody>
+                </table>
+            </div>
+            <p id="networks-message" class="message" role="status" aria-live="polite"></p>
+            <button id="networks-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% include "port-selection.html" %}
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/port-selection.js?v=4"></script>
+    <script src="/static/js/networks.js?v=8"></script>
+{% endblock %}

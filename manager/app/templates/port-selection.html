@@ -1,0 +1,20 @@
+    <dialog id="ports-modal" class="confirm-modal" aria-labelledby="ports-title" aria-describedby="ports-description">
+        <h2 id="ports-title">Ports</h2>
+        <p id="ports-description">Select the services and ports to scan in this {{ 'network' if page == 'networks' else 'target' if page == 'targets' else 'site' }}.</p>
+        <form id="ports-form">
+            {% if page == 'networks' %}
+            <div class="form">
+                <label for="ports-mode">Port Type</label>
+                <select id="ports-mode"><option value="I">Inherited from site</option><option value="C">Custom</option></select>
+            </div>
+            {% endif %}
+            <div class="scanner-network-scroll" role="region" aria-label="Available services" tabindex="0">
+                <fieldset id="ports-list" class="scanner-network-list" aria-label="Selected services"></fieldset>
+            </div>
+            <p id="ports-message" class="message" role="status" aria-live="polite"></p>
+            <div class="form-actions">
+                <button id="ports-cancel" class="secondary-button" type="button" data-button-icon="cancel">Cancel</button>
+                <button id="ports-save" class="secondary-button form-primary-button" type="submit" disabled data-button-icon="save">Save</button>
+            </div>
+        </form>
+    </dialog>

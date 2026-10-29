@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel form-panel-static">
+    <div class="panel-header"><div><h2>Calculate</h2><p>Enter an IP address and CIDR prefix to inspect its network.</p></div></div>
+    <div class="panel-body panel-form">
+        <form id="tool-form" class="form" autocomplete="off" data-tool="subnet" data-endpoint="/api/tools/subnet" data-success="Calculation completed.">
+<label for="subnet-network">IP / CIDR</label>
+<input id="subnet-network" name="network" type="text" required maxlength="100" spellcheck="false" autocomplete="off" placeholder="192.168.1.100/24" aria-describedby="subnet-hint">
+<p id="subnet-hint" class="form-hint">IPv4 or IPv6 with a prefix, for example 192.168.1.10/24 or 2001:db8::10/64.</p>
+{% set tool_action = "Calculate" %}
+{% set tool_icon = "rocket" %}
+{% include "tool-actions.html" %}
+        </form>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/tools.js?v=6"></script>
+{% endblock %}
+

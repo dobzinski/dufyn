@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/network-map.css?v=28">
+{% endblock %}
+{% block content %}
+    <details id="logical-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="logical-form-title">New</h2>
+                <p>Form for the logical topology</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="logical-form" class="form">
+                <label for="logical-site">Site</label>
+                <select id="logical-site" name="site_id" required><option value="">Select ...</option></select>
+                <label for="logical-name">Name</label>
+                <input id="logical-name" type="text" name="name" required maxlength="100" autocomplete="off">
+                <div class="form-actions">
+                    <button id="logical-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                    <button id="logical-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="logical-form-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header"><div><h2>Data</h2><p>Logical views and their associated assets.</p></div></div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="logical-table" class="data-table record-table">
+                    <thead><tr><th>#</th><th>Site</th><th>Name</th><th>Assoc.</th><th>Created</th><th>Actions</th></tr></thead>
+                    <tbody><tr><td colspan="6" class="table-message">No matching records found.</td></tr></tbody>
+                </table>
+            </div>
+            <p id="logical-message" class="message" role="status" aria-live="polite"></p>
+            <button id="logical-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+    {% include 'topology-mapping-modal.html' %}
+    <dialog id="network-map-modal" class="network-map-modal" aria-labelledby="network-map-title">
+        <header class="network-map-header">
+            <div><h2 id="network-map-title">Logical topology</h2><p id="network-map-subtitle"></p></div>
+            <button id="network-map-close" class="secondary-button" type="button" autofocus>Close</button>
+        </header>
+        <div class="network-map-toolbar" role="group" aria-label="Map controls">
+            <button id="network-map-zoom-out" class="secondary-button map-icon-button" type="button" aria-label="Zoom out" title="Zoom out"><span class="map-control-icon" data-map-icon="zoom-out" aria-hidden="true"></span></button>
+            <output id="network-map-zoom" aria-label="Zoom level">100%</output>
+            <button id="network-map-zoom-in" class="secondary-button map-icon-button" type="button" aria-label="Zoom in" title="Zoom in"><span class="map-control-icon" data-map-icon="zoom-in" aria-hidden="true"></span></button>
+            <button id="network-map-fit" class="secondary-button map-icon-button" type="button" aria-label="Fit" title="Fit"><span class="map-control-icon" data-map-icon="resize" aria-hidden="true"></span></button>
+            <button id="network-map-fullscreen" class="secondary-button map-icon-button" type="button" aria-label="Full screen" title="Full screen" aria-pressed="false"><span class="map-control-icon" data-map-icon="window-maximize" aria-hidden="true"></span></button>
+            <button id="network-map-download" class="secondary-button map-icon-button" type="button" aria-label="Download SVG" title="Download SVG"><span class="map-control-icon" data-map-icon="download" aria-hidden="true"></span></button>
+        </div>
+        <p id="network-map-message" class="message" role="status" aria-live="polite"></p>
+        <div id="network-map-body" class="network-map-body" hidden>
+            <div id="network-map-viewport" class="network-map-viewport">
+                <svg id="network-map-svg" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Logical asset hierarchy">
+                    <g id="network-map-scene"></g>
+                </svg>
+            </div>
+            <aside class="network-map-details" aria-label="Asset details">
+                <h3>Asset details</h3>
+                <p id="network-map-selection">Select an asset in the map.</p>
+                <dl id="network-map-details"></dl>
+            </aside>
+        </div>
+    </dialog>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/mapping.js?v=6"></script>
+    <script src="/static/js/topology-views.js?v=1"></script>
+    <script src="/static/js/network-map.js?v=24"></script>
+    <script src="/static/js/logical.js?v=8"></script>
+{% endblock %}

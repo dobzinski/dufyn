@@ -1,0 +1,47 @@
+# Database data: replace your-storage-class with your existing cluster StorageClass.
+# Keep the existing PVC name/class when retaining an already provisioned database.
+# Maintenance: a static NFS PV/PVC keeps the project's restore/upgrade folders visible.
+# Replace the NFS server/export below; it must contain database/restore and database/upgrade.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-dufyn-database-0
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: your-storage-class
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dufyn-maintenance
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ''
+  claimRef:
+    namespace: dufyn
+    name: dufyn-maintenance
+  nfs:
+    server: 192.0.2.10
+    path: /exports/dufyn
+    readOnly: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dufyn-maintenance
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: ''
+  volumeName: dufyn-maintenance
+  resources:
+    requests:
+      storage: 1Gi

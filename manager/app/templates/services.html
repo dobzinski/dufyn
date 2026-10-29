@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content %}
+    <details id="service-accordion" class="panel form-panel">
+        <summary class="panel-header form-summary">
+            <div>
+                <h2 id="service-form-title">New</h2>
+                <p>Form for the discovery service</p>
+            </div>
+            <span class="form-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="panel-body panel-form">
+            <form id="service-form" class="form">
+                <label for="service-port">Port</label>
+                <input id="service-port" name="port" type="number" min="1" max="65535" step="1" required>
+                <label for="service-protocol">Protocol</label>
+                <select id="service-protocol" name="protocol"><option value="T">TCP</option><option value="U">UDP</option></select>
+                <label for="service-name">Service (optional)</label>
+                <input id="service-name" name="service" maxlength="100" autocomplete="off">
+                <div class="form-actions">
+                    <button id="service-submit" class="secondary-button form-primary-button" type="submit" data-button-icon="add">Add</button>
+                    <button id="service-cancel" data-form-cancel class="secondary-button form-secondary-button" type="button" hidden data-button-icon="cancel">Cancel</button>
+                </div>
+                <p id="service-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+        </div>
+    </details>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Data</h2>
+                <p>Manage service ports and protocols available for scanning.</p>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="table-wrapper">
+                <table id="services-table" class="data-table record-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Port</th>
+                            <th>Protocol</th>
+                            <th>Service</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" class="table-message">Loading services...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p id="services-message" class="message" role="status" aria-live="polite"></p>
+            <button id="services-retry" class="secondary-button" type="button" hidden>Retry loading</button>
+        </div>
+    </section>
+{% endblock %}
+{% block scripts %}
+    <script src="/static/js/services.js?v=3"></script>
+{% endblock %}
