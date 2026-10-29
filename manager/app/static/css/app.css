@@ -1422,7 +1422,7 @@ body {
 
     .sidebar-close { display: inline-flex; }
     .sidebar .brand { padding-right: 30px; }
-    .brand-subtitle { font-size: 10px; }
+    .brand-subtitle { font-size: 14px; }
     body.menu-open { overflow: hidden; }
 
 
