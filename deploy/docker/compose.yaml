@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: dufyn-database:${DUFYN_IMAGE_TAG}
+    image: dufyn-database:${DUFYN_DATABASE_IMAGE_TAG}
     build:
       context: ../../database
     container_name: dufyn-database
@@ -27,7 +27,7 @@ services:
     # Database is reachable only on the Docker network.
 
   manager:
-    image: dufyn-manager:${DUFYN_IMAGE_TAG}
+    image: dufyn-manager:${DUFYN_MANAGER_IMAGE_TAG}
     build:
       context: ../../manager
     container_name: dufyn-manager
@@ -66,7 +66,7 @@ services:
       - dufyn_backend
 
   controller:
-    image: dufyn-controller:${DUFYN_IMAGE_TAG}
+    image: dufyn-controller:${DUFYN_CONTROLLER_IMAGE_TAG}
     container_name: dufyn-controller
     build:
       context: ../../controller
@@ -101,7 +101,7 @@ services:
       - dufyn_backend
 
   scanner:
-    image: dufyn-scanner:${DUFYN_IMAGE_TAG}
+    image: dufyn-scanner:${DUFYN_SCANNER_IMAGE_TAG}
     container_name: dufyn-scanner
     build:
       context: ../../scanner
