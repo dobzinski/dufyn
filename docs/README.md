@@ -19,3 +19,4 @@ Start with the [project overview](../README.md) and [installation guide](INSTALL
 - [DNS inventory](DNS.md): forward-zone imports and record persistence.
 - [Public monitoring API](API.md): available read-only endpoints.
 - [HTTPS and private CA](HTTPS.md): Controller API trust for Manager and Scanner.
+- [Troubleshooting](TROUBLESHOTTING.md): resolve Manager origin validation errors and configure trusted proxies.
