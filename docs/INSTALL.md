@@ -86,5 +86,14 @@ needs a reachable Controller URL and port access. See [HTTPS](HTTPS.md) for a
 private CA, [Scanner execution](SCANS.md) for modes and partial scans,
 [DNS inventory](DNS.md) for zone imports, and the [public API](API.md) for monitoring.
 
+## Uninstall using Docker
+
+Uninstall Dufyn: remove containers, images, and volumes.
+
+**WARNING: This also removes the PostgreSQL data volume, permanently deleting all database data.**
+
+```sh
+docker compose -f deploy/docker/compose.yaml down -v --rmi all --remove-orphans
+```
 
 # Working here ...
