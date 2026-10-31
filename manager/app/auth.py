@@ -12,6 +12,24 @@ from fastapi.responses import JSONResponse, RedirectResponse
 COOKIE = "dufyn_session"
 
 
+def normalize_origin(value):
+    """Return an HTTP origin tuple; reject URLs containing more than an origin."""
+    if not isinstance(value, str) or not value or any(c.isspace() or ord(c) < 32 for c in value) or "\\" in value:
+        return None
+    try:
+        parsed = urlsplit(value)
+        if (parsed.scheme not in {"http", "https"} or not parsed.hostname
+                or parsed.username is not None or parsed.password is not None
+                or parsed.path not in {"", "/"} or "?" in value or "#" in value):
+            return None
+        port = parsed.port
+        if port is None:
+            port = 443 if parsed.scheme == "https" else 80
+        return parsed.scheme, parsed.hostname.lower(), port
+    except ValueError:
+        return None
+
+
 class AccessControl:
     def __init__(self, get_config):
         self.get_config = get_config
@@ -22,6 +40,10 @@ class AccessControl:
         password = os.environ.get("MANAGER_LOGIN_PASSWORD", "")
         self.password = hashlib.sha256(password.encode()).digest()
         self.configured = bool(self.username and password and not password.startswith("REPLACE_WITH_"))
+        public_origin = os.environ.get("MANAGER_PUBLIC_ORIGIN", "").strip()
+        self.public_origin = normalize_origin(public_origin) if public_origin else None
+        if public_origin and self.public_origin is None:
+            raise ValueError("MANAGER_PUBLIC_ORIGIN must be an HTTP(S) origin without credentials, path, query or fragment")
 
     @property
     def enabled(self):
@@ -46,7 +68,11 @@ class AccessControl:
         origin = request.headers.get("origin")
         if request.headers.get("sec-fetch-site") == "cross-site":
             return False
-        return not origin or origin == str(request.base_url).rstrip("/")
+        if origin is None:
+            return True
+        expected = self.public_origin or normalize_origin(str(request.base_url))
+        actual = normalize_origin(origin)
+        return actual is not None and expected is not None and actual == expected
 
     async def middleware(self, request, call_next):
         if request.method not in {"GET", "HEAD", "OPTIONS"} and not self.same_origin(request):
