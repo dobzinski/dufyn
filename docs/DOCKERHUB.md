@@ -62,3 +62,39 @@ Open your `dufyn` repository on Docker Hub and confirm that its **Tags** tab lis
 - `manager-0.1.0`
 - `controller-0.1.0`
 - `database-0.1.0`
+
+
+## 6. Publish an updated component
+
+After updating the Manager code, publish a new version without overwriting
+the existing tag. Run the commands from the project root.
+
+Update `deploy/docker/.env`:
+
+```dotenv
+DUFYN_MANAGER_IMAGE_TAG=0.1.1
+```
+
+Update the version field in `manager/version.yaml`, preserving its structure:
+
+```yaml
+version: "0.1.1"
+```
+
+Build the updated image:
+
+```shell
+docker compose -f deploy/docker/compose.yaml build manager
+```
+
+After the build succeeds, test the image before publishing it.
+
+Tag and push the validated image:
+
+```shell
+docker tag dufyn-manager:0.1.1 <your-dockerhub-username>/dufyn:manager-0.1.1
+docker push <your-dockerhub-username>/dufyn:manager-0.1.1
+```
+
+Update the target deployment to use the new image tag.
+Other components can retain their existing versions.
