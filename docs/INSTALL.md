@@ -70,6 +70,12 @@ docker compose -f deploy/docker/compose.yaml build scanner
 docker compose -f deploy/docker/compose.yaml run --rm scanner
 ```
 
+If you need to recreate any containers after updating the configuration, run the example command for
+the `manager` and the `scanner`:
+```sh
+docker compose -f deploy/docker/compose.yaml up -d --force-recreate --no-deps manager scanner
+```
+
 Compose mounts `scanner/config.yaml` read-only into the container. Changing its
 token or settings requires a new Scanner execution, not an image rebuild.
 Recreate a running continuous Scanner to load changed configuration. Rebuild
