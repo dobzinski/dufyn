@@ -6,5 +6,4 @@ COPY --chmod=0644 requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app/ ./app/
 COPY --chmod=0644 version.yaml ./version.yaml
-COPY --chmod=0644 config.yaml ./config.yaml
 CMD ["python", "-m", "app.main"]
