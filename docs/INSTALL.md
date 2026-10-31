@@ -3,7 +3,7 @@
 ## Docker
 
 1. Install and start Docker on openSUSE
-```
+```sh
 zypper install docker docker-compose
 systemctl enable --now docker
 ```
@@ -17,16 +17,15 @@ openSUSE, install Docker and its Compose plugin using that platform's instructio
 ```sh
 cd /opt/dufyn
 cp deploy/docker/.env.example deploy/docker/.env
-openssl rand -base64 32
 ```
 
 You can use openssl to generate the `PKI_MASTER_KEY` password.
-```
+```sh
 openssl rand -base64 32
 ```
 
 And, for Postgres, generate the `POSTGRES_PASSWORD` and `POSTGRES_APP_PASSWORD` passwords.
-```
+```sh
 openssl rand -hex 24
 ```
 
@@ -46,7 +45,7 @@ set `access.login: true` and configure `MANAGER_LOGIN_USER` and
 `MANAGER_LOGIN_PASSWORD` in `.env`.
 
 3. Build
-```
+```sh
 cd /opt/dufyn
 docker compose -f deploy/docker/compose.yaml config --quiet
 docker compose -f deploy/docker/compose.yaml up -d --build
