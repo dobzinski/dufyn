@@ -20,8 +20,18 @@ cp deploy/docker/.env.example deploy/docker/.env
 openssl rand -base64 32
 ```
 
-Edit `deploy/docker/.env`: replace the password placeholders and set
-`PKI_MASTER_KEY` to the generated value. Keep this key unchanged and backed up;
+You can use openssl to generate the `PKI_MASTER_KEY` password.
+```
+openssl rand -base64 32
+```
+
+And, for Postgres, generate the `POSTGRES_PASSWORD` and `POSTGRES_APP_PASSWORD` passwords.
+```
+openssl rand -hex 24
+```
+
+Edit `deploy/docker/.env`: replace the passwords placeholders.
+Keep this key unchanged and backed up;
 it protects stored private keys and passwords. Never publish the real `.env`.
 Do not overwrite an existing installation's `.env` or encryption key.
 
