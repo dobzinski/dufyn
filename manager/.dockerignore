@@ -9,3 +9,5 @@ venv/
 *.dump
 *.zip
 .git/
+config.yaml
+config.*.yaml
