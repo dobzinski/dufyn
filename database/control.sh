@@ -10,13 +10,32 @@ if [ "$1" != postgres ] || _pg_want_help "$@"; then exec "$@"; fi
 
 docker_setup_env
 docker_create_db_directories
-if [ "$(id -u)" = 0 ]; then
-    exec gosu postgres bash "${BASH_SOURCE[0]}" "$@"
-fi
-
 database_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 restore_dir="$database_dir/restore"
 upgrade_dir="$database_dir/upgrade"
+if [ "$(id -u)" = 0 ]; then
+    # Mounted directories and newly copied SQLs may belong to another user.
+    # Prepare access before dropping privileges; never recurse or follow symlinks.
+    for directory in "$restore_dir" "$upgrade_dir"; do
+        if [ -L "$directory" ] || [ ! -d "$directory" ]; then
+            echo "DUFYN: maintenance path must be a real directory: $directory" >&2
+            exit 1
+        fi
+        if ! chown postgres:postgres -- "$directory" || ! chmod u+rwx -- "$directory"; then
+            echo "DUFYN: cannot prepare PostgreSQL access to directory: $directory" >&2
+            exit 1
+        fi
+        for file in "$directory"/*.sql; do
+            [ -f "$file" ] && [ ! -L "$file" ] || continue
+            if ! chown postgres:postgres -- "$file" || ! chmod u+r -- "$file"; then
+                echo "DUFYN: cannot prepare PostgreSQL read access to SQL: $file" >&2
+                exit 1
+            fi
+        done
+    done
+    exec gosu postgres bash "${BASH_SOURCE[0]}" "$@"
+fi
+
 # Never silently run applications as administrator on partial app credentials.
 if { [ -n "${POSTGRES_APP_USER:-}" ] && [ -z "${POSTGRES_APP_PASSWORD:-}" ]; } ||
    { [ -z "${POSTGRES_APP_USER:-}" ] && [ -n "${POSTGRES_APP_PASSWORD:-}" ]; }; then
@@ -32,8 +51,8 @@ if [ "${#restores[@]}" -gt 1 ]; then
     exit 1
 fi
 for file in "${restores[@]}" "${upgrades[@]}"; do
-    if [ ! -f "$file" ] || [ -L "$file" ] || [ ! -s "$file" ] || [ ! -w "$(dirname -- "$file")" ]; then
-        echo "DUFYN: SQL must be a nonempty regular file in a writable directory: $file" >&2
+    if [ ! -f "$file" ] || [ -L "$file" ] || [ ! -s "$file" ] || [ ! -r "$file" ] || [ ! -w "$(dirname -- "$file")" ] || [ ! -x "$(dirname -- "$file")" ]; then
+        echo "DUFYN: SQL must be a readable nonempty regular file in a writable/searchable directory: $file" >&2
         exit 1
     fi
 done
