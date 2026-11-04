@@ -63,7 +63,7 @@ window.InventoryChart = (() => {
         daily.forEach((day, index) => {
             const x = left + step * (index + 0.5);
             let y = bottom;
-            const detail = `${day.date} (${timeZone}) — Total: ${totals[index].toLocaleString("en-US")}\n` +
+            const detail = `${day.date} — Total: ${totals[index].toLocaleString("en-US")}\n` +
                 categories.map(([key, name]) => `${name}: ${Number(day.totals[key] || 0).toLocaleString("en-US")}`).join("\n");
             const group = svgElement("g", {tabindex: "0", role: "img", "aria-label": detail, class: "inventory-day"});
             group.append(svgElement("title", {}, detail));
@@ -74,7 +74,7 @@ window.InventoryChart = (() => {
                 if (mode === "lines") {
                     const point = svgElement("circle", {cx: x, cy: bottom - height,
                         r: Math.max(1.5, Math.min(4, step * 0.15)), fill: color});
-                    point.append(svgElement("title", {}, `${day.date} (${timeZone}) — ${name}: ${Number(day.totals[key] || 0).toLocaleString("en-US")}`));
+                    point.append(svgElement("title", {}, `${day.date} — ${name}: ${Number(day.totals[key] || 0).toLocaleString("en-US")}`));
                     group.append(point);
                 } else {
                     y -= height;
