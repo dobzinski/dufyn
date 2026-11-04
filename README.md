@@ -39,6 +39,9 @@ and the persistent PKI key. Publish `.env.example`, never the real `.env`.
 
 ## Container images
 
+Published images are available on [Docker Hub](https://hub.docker.com/r/dobzinski/dufyn/).
+See the [available tags](https://hub.docker.com/r/dobzinski/dufyn/tags) for component versions.
+
 The explicit application images are `dufyn-manager:latest`,
 `dufyn-controller:latest`, `dufyn-scanner:latest`, and `dufyn-database:latest`.
 The database image extends PostgreSQL.
