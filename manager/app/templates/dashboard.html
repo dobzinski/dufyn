@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/chart.css?v=4">
+{% endblock %}
 {% block content %}
     <div class="summary-grid">
         <article class="summary-card">
@@ -152,19 +155,25 @@
             </div>
         </section>
     </div>
-    <section class="panel top-ports-panel" aria-labelledby="newers-title">
+    {% if newers_days > 0 %}
+    <section id="newers-panel" class="panel top-ports-panel" aria-labelledby="newers-title">
         <div class="panel-header">
             <div>
-                <h2 id="newers-title">Newers</h2>
-                <p>{% if newers_days > 0 %}Data from the last {{ newers_days }} {{ 'day' if newers_days == 1 else 'days' }}{% else %}Recent inventory disabled (newers.days: 0){% endif %}</p>
+                <h2 id="newers-title">Newers by Day</h2>
+                <p>Data from the last {{ newers_days }} {{ 'day' if newers_days == 1 else 'days' }}</p>
             </div>
         </div>
         <div class="panel-body">
+            <div id="newers-history" class="inventory-history" hidden>
+                <div id="newers-daily-chart"></div>
+            </div>
+            <h3 class="inventory-totals-title">Newers Total</h3>
             <ol id="newers-chart" class="top-ports-chart" aria-label="Recent inventory counts by category"></ol>
             <p id="newers-message" class="message" role="status">Loading recent inventory...</p>
             <button id="newers-retry" class="secondary-button" type="button" hidden>Retry loading</button>
         </div>
     </section>
+    {% endif %}
     <section class="panel top-ports-panel" aria-labelledby="top-ports-title">
         <div class="panel-header">
             <div>
@@ -242,6 +251,7 @@
 {% endblock %}
 {% block scripts %}
     {% if inventory_connected %}
-        <script src="/static/js/dashboard.js?v=28"></script>
+        <script src="/static/js/chart.js?v=5"></script>
+        <script src="/static/js/dashboard.js?v=33"></script>
     {% endif %}
 {% endblock %}

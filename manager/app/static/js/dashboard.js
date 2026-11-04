@@ -354,7 +354,13 @@ function renderPtrBadge(value) {
 }
 
 function ptrAttentionReasons(record) {
-    return record.attention_reasons || [record.undiscovered ? "Undiscovered" : "", record.asset_status === "Inactive" ? "Inactive" : "", record.comparison === "Mismatch" ? "Mismatch" : ""].filter(Boolean);
+    const reasons = new Set(record.attention_reasons || []);
+    if (record.undiscovered) reasons.add("Undiscovered");
+    if (record.asset_status === "Inactive") reasons.add("Inactive");
+    if (record.comparison === "Mismatch") reasons.add("Mismatch");
+    // Show one actionable status; Comparison continues to show name mismatches.
+    const primary = ["Undiscovered", "Inactive", "Mismatch"].find(reason => reasons.has(reason));
+    return primary ? [primary] : [];
 }
 
 async function loadPtrAttention() {
@@ -399,18 +405,28 @@ async function loadPtrAttention() {
 }
 
 async function loadNewers() {
+    const panel = document.getElementById("newers-panel");
+    if (!panel) return;
     const message = document.getElementById("newers-message");
     const retry = document.getElementById("newers-retry");
     const chart = document.getElementById("newers-chart");
+    const history = document.getElementById("newers-history");
+    const dailyChart = document.getElementById("newers-daily-chart");
+    history.hidden = true;
+    dailyChart.replaceChildren();
     retry.hidden = true;
     showMessage(message, "Loading recent inventory...", "info");
     try {
-        const response = await fetch("/api/newers/totals", {cache: "no-store"});
+        let timezone = "UTC";
+        try {
+            timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+        } catch (_) { /* UTC fallback when the browser cannot report a timezone. */ }
+        const query = new URLSearchParams({tz: timezone});
+        const response = await fetch(`/api/newers/totals?${query}`, {cache: "no-store"});
         if (!response.ok) throw new Error("Unable to load recent inventory.");
         const data = await response.json();
         if (!data.enabled) {
-            chart.replaceChildren();
-            showMessage(message, "Recent inventory is disabled (newers.days: 0).", "info");
+            panel.hidden = true;
             return;
         }
         const categories = {assets: "Assets", targets: "Targets", ports: "Ports", certificates: "Certificates", dns: "DNS", ptr: "PTR"};
@@ -419,6 +435,8 @@ async function loadNewers() {
             chartId: "newers-chart", messageId: "newers-message",
             label: item => item.name,
         });
+        history.hidden = false;
+        InventoryChart.render(dailyChart, data.daily, data.generated_at, data.chart, data.timezone);
         if (items.every(item => Number(item.total) === 0)) {
             showMessage(message, "No new data in this period.", "info");
         }
@@ -503,7 +521,7 @@ function renderTopRanking(items, options) {
         items.length ? "" : options.emptyMessage, "info");
 }
 
-document.getElementById("newers-retry").addEventListener("click", loadNewers);
+document.getElementById("newers-retry")?.addEventListener("click", loadNewers);
 
 document.getElementById("top-ports-retry").addEventListener("click", loadTopPorts);
 document.getElementById("top-os-retry").addEventListener("click", loadTopOperatingSystems);

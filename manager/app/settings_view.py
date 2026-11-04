@@ -3,7 +3,7 @@
 
 def settings_sections(config):
     def row(key, label, value, description, kind="text"):
-        services = "Manager and Controller" if key.startswith(("tls.", "newers.")) else "Manager"
+        services = "Manager and Controller" if key.startswith("tls.") or key == "newers.days" else "Manager"
         description = f"{description} Restart the {services} after changes."
         return dict(key=key, label=label, value=value, description=description, kind=kind)
 
@@ -24,7 +24,8 @@ def settings_sections(config):
             row("controller.url", "Service URL", config.get("controller", {}).get("url") or "Not configured", "Base address used by the Manager to check controller availability."),
             row("controller.ca_file", "Controller CA file", config.get("controller", {}).get("ca_file") or "System trust store", "Optional PEM CA bundle for HTTPS requests to the Controller; the path is inside the container.")]),
         dict(title="Recent inventory", column=0, description="Monitoring window for the Controller public API.", rows=[
-            row("newers.days", "Recent records window", str(config.get("newers", {}).get("days", 0)) + " days", "Rolling window for /v1/public/newers, Dashboard totals and highlighted inventory rows. Set to 0 to disable.")]),
+            row("newers.days", "Recent records window", str(config.get("newers", {}).get("days", 0)) + " days", "Rolling window for /v1/public/newers, Dashboard totals and highlighted inventory rows. Set to 0 to disable."),
+            row("newers.chart", "Daily chart", config.get("newers", {}).get("chart", "bars"), "Dashboard daily chart: lines with points or stacked bars. Available options: lines, bars.")]),
         dict(title="Self-signed certificates", column=0, description="Defaults used when issuing new certificates.", rows=[
             row("self-signed.key_algorithm", "Key algorithm", signing["key_algorithm"], "Algorithm used to generate the private key. RSA is the only supported option."),
             row("self-signed.rsa_key_size", "RSA key size", str(signing["rsa_key_size"]) + " bits", "Size of newly generated RSA keys. Available options: 2048, 3072 or 4096 bits."),

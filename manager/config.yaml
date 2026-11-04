@@ -35,6 +35,7 @@ self-signed:
 # Public API: records first observed within this rolling number of days.
 newers:
   days: 5 # 0 disables /v1/public/newers without changing scanner collection.
+  chart: lines # Dashboard daily chart: lines (with points) or bars (stacked).
 
 # Time Converter options. value is an IANA identifier; label is shown in the UI.
 time:

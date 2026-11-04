@@ -1,0 +1,12 @@
+.inventory-history { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.inventory-totals-title { margin: 0 0 16px; font-size: 14px; color: var(--text-primary); }
+#newers-daily-chart { width: 100%; min-width: 0; }
+.inventory-chart-scroll { width: 100%; min-width: 0; }
+.inventory-daily-svg { display: block; width: 100%; height: 275px; }
+.inventory-chart-label { fill: var(--text-secondary); font-size: 12px; font-family: inherit; }
+.inventory-chart-grid { stroke: var(--border); stroke-width: 1; }
+.inventory-day:focus { outline: 2px solid #A8B0C5; }
+.inventory-day:hover { opacity: 0.8; }
+.inventory-chart-legend { display: flex; flex-wrap: wrap; gap: 12px 20px; padding: 0; margin: 12px 0 0; list-style: none; }
+.inventory-chart-legend li { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); }
+.inventory-chart-legend span { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }

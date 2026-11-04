@@ -98,6 +98,9 @@ def load_config():
     days = newers.setdefault("days", 0)
     if type(days) is not int or not 0 <= days <= 36500:
         raise ValueError("newers.days must be an integer between 0 and 36500")
+    chart = newers.setdefault("chart", "bars")
+    if not isinstance(chart, str) or chart not in {"bars", "lines"}:
+        raise ValueError("newers.chart must be bars or lines")
 
     signing = config.setdefault("self-signed", {})
     if not isinstance(signing, dict):
