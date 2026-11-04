@@ -1,20 +1,22 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: dufyn-scanner
+  name: dufyn-scanner-all
 spec:
   schedule: 0 * * * *
   suspend: true
   concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       backoffLimit: 0
       template:
         spec:
-          terminationGracePeriodSeconds: 60
+          terminationGracePeriodSeconds: 3600
           containers:
           - name: dufyn-scanner
-            image: dufyn-scanner:latest
+            image: docker.io/dobzinski/dufyn:scanner-0.1.1
             imagePullPolicy: IfNotPresent
             workingDir: /opt/dufyn
             env:

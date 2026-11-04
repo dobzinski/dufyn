@@ -13,7 +13,7 @@ Start with the [project overview](../README.md) and [installation guide](INSTALL
 
 ## Guides
 
-- [Installation](INSTALL.md): Docker setup and scanner enrollment.
+- [Installation](INSTALL.md): Docker Compose and Kubernetes setup, scanner enrollment and Fleet labs.
 - [Docker Hub](DOCKERHUB.md): tag and publish local Dufyn images to Docker Hub.
 - [Scanner execution](SCANS.md): scan selection, execution modes and collection behavior.
 - [DNS inventory](DNS.md): forward-zone imports and record persistence.

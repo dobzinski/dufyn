@@ -1,4 +1,3 @@
-# Fill/apply secrets.yaml separately before the first deployment.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: dufyn
@@ -6,7 +5,14 @@ resources:
 - namespace.yaml
 - pvc.yaml
 - configmaps.yaml
+- secrets.yaml
 - postgres.yaml
 - applications.yaml
-- scanner-cronjob.yaml
+- scanner-cronjob-all.yaml # every hour
+- scanner-cronjob-certificates.yaml # manually
+- scanner-cronjob-dns.yaml # manually
+- scanner-cronjob-endpoints.yaml # manually
 - networkpolicy.yaml
+#- postgres-admissionpolicy # requires Kubernetes 1.30 / statefulset locking with 1 pod
+- ingress-nginx.yaml # if you use Nginx
+#- ingress-traefik.yaml # if you use Traefik

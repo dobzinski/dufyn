@@ -9,29 +9,10 @@ metadata:
 spec:
   accessModes:
   - ReadWriteOnce
-  storageClassName: your-storage-class
+  storageClassName: <your-storage-class>
   resources:
     requests:
       storage: 10Gi
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: dufyn-maintenance
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-  - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: ''
-  claimRef:
-    namespace: dufyn
-    name: dufyn-maintenance
-  nfs:
-    server: 192.0.2.10
-    path: /exports/dufyn
-    readOnly: false
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -39,9 +20,42 @@ metadata:
   name: dufyn-maintenance
 spec:
   accessModes:
-  - ReadWriteMany
-  storageClassName: ''
-  volumeName: dufyn-maintenance
+  - ReadWriteOnce
+  storageClassName: <your-storage-class>
   resources:
     requests:
       storage: 1Gi
+
+# Maintenance PV option using NFS directly
+# -----
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: dufyn-maintenance
+#spec:
+#  capacity:
+#    storage: 1Gi
+#  accessModes:
+#  - ReadWriteMany
+#  persistentVolumeReclaimPolicy: Retain
+#  storageClassName: ''
+#  claimRef:
+#    namespace: dufyn
+#    name: dufyn-maintenance
+#  nfs:
+#    server: <your-nfs-server-address>
+#    path: /exports/dufyn # this path must exist on the server
+#    readOnly: false
+#---
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: dufyn-maintenance
+#spec:
+#  accessModes:
+#  - ReadWriteMany
+#  storageClassName: ''
+#  volumeName: dufyn-maintenance
+#  resources:
+#    requests:
+#      storage: 1Gi

@@ -1,0 +1,38 @@
+# Requires Kubernetes 1.30 or later with ValidatingAdmissionPolicy enabled.
+# These cluster-scoped resources are applied separately by a cluster administrator.
+# Allow maintenance shutdowns while preventing concurrent PostgreSQL replicas.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: dufyn-database-max-one-replica
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          - statefulsets
+          - statefulsets/scale
+  matchConditions:
+    - name: only-dufyn-database
+      expression: >-
+        request.namespace == 'dufyn' &&
+        object.metadata.name == 'dufyn-database'
+  validations:
+    - expression: >-
+        object.spec.replicas >= 0 &&
+        object.spec.replicas <= 1
+      message: >-
+        The dufyn-database PostgreSQL StatefulSet allows only 0 or 1 replica
+        because its shared storage is not configured for database replication.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: dufyn-database-max-one-replica
+spec:
+  policyName: dufyn-database-max-one-replica
+  validationActions:
+    - Deny

@@ -18,9 +18,9 @@ data:
       login: false
       session: 3600
     password:
-      manager: false
+      manager: true
     logo:
-      animate: false
+      animate: true
     controller:
       ca_file: null # Optional PEM CA bundle mounted at /opt/dufyn/certs/ca.crt.
       url: http://dufyn-controller:8000
@@ -42,6 +42,7 @@ data:
       signature_hash: SHA256
     newers:
       days: 5
+      chart: lines
     time:
       timezones:
       - value: UTC

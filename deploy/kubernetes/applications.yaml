@@ -14,10 +14,14 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: dufyn-manager
-        image: dufyn-manager:latest
+        image: docker.io/dobzinski/dufyn:manager-0.1.3
         imagePullPolicy: IfNotPresent
         workingDir: /opt/dufyn
         env:
+        - name: MANAGER_PUBLIC_ORIGIN
+          value: "https://dufyn.example.test" 
+        - name: FORWARDED_ALLOW_IPS
+          value: "127.0.0.1,10.42.0.0/16"
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
@@ -147,10 +151,12 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: dufyn-controller
-        image: dufyn-controller:latest
+        image: docker.io/dobzinski/dufyn:controller-0.1.1
         imagePullPolicy: IfNotPresent
         workingDir: /opt/dufyn
         env:
+        - name: FORWARDED_ALLOW_IPS
+          value: "127.0.0.1,10.42.0.0/16"
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:

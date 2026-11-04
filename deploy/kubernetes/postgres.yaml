@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: dufyn-database
-        image: dufyn-database:latest
+        image: docker.io/dobzinski/dufyn:database-0.1.1
         imagePullPolicy: IfNotPresent
         command:
         - bash
