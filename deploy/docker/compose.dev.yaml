@@ -1,6 +1,8 @@
 services:
   postgres:
-    image: docker.io/dobzinski/dufyn:database-0.1.1
+    image: dufyn-database:${DUFYN_DATABASE_IMAGE_TAG}
+    build:
+      context: ../../database
     container_name: dufyn-database
     entrypoint: ["bash", "/opt/dufyn/database/control.sh"]
     command: ["postgres"]
@@ -25,7 +27,9 @@ services:
     # Database is reachable only on the Docker network.
 
   manager:
-    image: docker.io/dobzinski/dufyn:manager-0.1.1
+    image: dufyn-manager:${DUFYN_MANAGER_IMAGE_TAG}
+    build:
+      context: ../../manager
     container_name: dufyn-manager
     restart: unless-stopped
     security_opt:
@@ -51,6 +55,7 @@ services:
     volumes:
       - ../../manager/config.yaml:/opt/dufyn/config.yaml:ro
       - ../../certs:/opt/dufyn/certs:ro
+      - ../../manager/version.yaml:/opt/dufyn/version.yaml:ro
       - ./.env:/opt/dufyn/backup-source/.env:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=3).close()"]
@@ -62,8 +67,10 @@ services:
       - dufyn_backend
 
   controller:
-    image: docker.io/dobzinski/dufyn:controller-0.1.1
+    image: dufyn-controller:${DUFYN_CONTROLLER_IMAGE_TAG}
     container_name: dufyn-controller
+    build:
+      context: ../../controller
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
@@ -85,6 +92,7 @@ services:
       - "${CONTROLLER_BIND_ADDRESS:-0.0.0.0}:8081:8000"
     volumes:
       - ../../manager/config.yaml:/opt/dufyn/config.yaml:ro
+      - ../../controller/version.yaml:/opt/dufyn/version.yaml:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=3).close()"]
       interval: 10s
@@ -94,8 +102,10 @@ services:
       - dufyn_backend
 
   scanner:
-    image: docker.io/dobzinski/dufyn:scanner-0.1.1
+    image: dufyn-scanner:${DUFYN_SCANNER_IMAGE_TAG}
     container_name: dufyn-scanner
+    build:
+      context: ../../scanner
     profiles: ["scanner"]
     depends_on:
       controller:
@@ -115,6 +125,7 @@ services:
     volumes:
       - ../../scanner/config.yaml:/opt/dufyn/config.yaml:ro
       - ../../certs:/opt/dufyn/certs:ro
+      - ../../scanner/version.yaml:/opt/dufyn/version.yaml:ro
     networks:
       - dufyn_backend
 
@@ -124,3 +135,4 @@ volumes:
 networks:
   dufyn_backend:
     name: dufyn_backend
+
