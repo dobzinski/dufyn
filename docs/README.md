@@ -15,6 +15,7 @@ Start with the [project overview](../README.md) and [installation guide](INSTALL
 
 - [Installation](INSTALL.md): Docker Compose and Kubernetes setup, scanner enrollment and Fleet labs.
 - [Restore and upgrades](RESTORE.md): restore database backups and apply ordered SQL upgrades with Docker or Kubernetes.
+- [Development](DEVELOPMENT.md): steps to set up the development environment for building images.
 - [Docker Hub](DOCKERHUB.md): tag and publish local Dufyn images to Docker Hub.
 - [Scanner execution](SCANS.md): scan selection, execution modes and collection behavior.
 - [DNS inventory](DNS.md): forward-zone imports and record persistence.

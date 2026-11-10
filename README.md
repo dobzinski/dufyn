@@ -42,8 +42,8 @@ and the persistent PKI key. Publish `.env.example`, never the real `.env`.
 Published images are available on [Docker Hub](https://hub.docker.com/r/dobzinski/dufyn/).
 See the [available tags](https://hub.docker.com/r/dobzinski/dufyn/tags) for component versions.
 
-The explicit application images are `dufyn-manager:latest`,
-`dufyn-controller:latest`, `dufyn-scanner:latest`, and `dufyn-database:latest`.
+The explicit application images are `dufyn-manager:<tag>`,
+`dufyn-controller:<tag>`, `dufyn-scanner:<tag>`, and `dufyn-database:<tag>`.
 The database image extends PostgreSQL.
 Docker service names remain `manager`, `controller`, `scanner`, and `postgres`.
 Compose volume/project identifiers are retained to keep the current database.

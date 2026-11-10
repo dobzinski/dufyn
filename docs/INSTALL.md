@@ -45,11 +45,12 @@ Review `manager/config.yaml` and `scanner/config.yaml`. To require Manager login
 set `access.login: true` and configure `MANAGER_LOGIN_USER` and
 `MANAGER_LOGIN_PASSWORD` in `.env`.
 
-3. Build
+3. Pull and run images
 ```sh
 cd /opt/dufyn
-docker compose -f deploy/docker/compose.yaml config --quiet
-docker compose -f deploy/docker/compose.yaml up -d --build
+docker compose -f deploy/docker/compose.yaml --profile scanner config --quiet
+docker compose -f deploy/docker/compose.yaml --profile scanner pull
+docker compose -f deploy/docker/compose.yaml up -d --no-build postgres manager controller
 docker compose -f deploy/docker/compose.yaml ps
 curl -fsS http://localhost:8080/health
 curl -fsS http://localhost:8081/ready
@@ -64,23 +65,14 @@ to the Scanner, then generate a token and set `controller.token` in
 `scanner/config.yaml`. Alternatively, set `SCANNER_TOKEN` in `.env`; a nonempty
 environment token overrides the YAML value.
 
-Build the Scanner image for its first execution, then run collection:
+Run Scanner for its first execution, then run collection:
 
 ```sh
-docker compose -f deploy/docker/compose.yaml build scanner
 docker compose -f deploy/docker/compose.yaml run --rm scanner
 ```
 
-If you need to recreate any containers after updating the configuration, run the example command for
-the `manager` and the `scanner`:
-```sh
-docker compose -f deploy/docker/compose.yaml up -d --force-recreate --no-deps manager scanner
-```
-
 Compose mounts `scanner/config.yaml` read-only into the container. Changing its
-token or settings requires a new Scanner execution, not an image rebuild.
-Recreate a running continuous Scanner to load changed configuration. Rebuild
-when application code, dependencies or the image base changes.
+token or settings requires a new Scanner execution.
 
 The supplied Controller URL works inside this Compose network. A remote Scanner
 needs a reachable Controller URL and port access. See [HTTPS](HTTPS.md) for a
