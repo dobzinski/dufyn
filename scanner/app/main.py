@@ -531,7 +531,7 @@ def execution_resources(config):
 
 
 def _run_cycle(client, config, stop, claimed, stage="discovery"):
-    # One global ping pool/rate limiter, independent of the number of networks.
+    # One shared probe pool/rate limiter per stage, independent of network count.
     parallel_tasks = (
         min(config["discovery"]["parallel_networks"], config["discovery"]["concurrency"])
         if stage in ("discovery", "ptr") else config["discovery"]["concurrency"]
@@ -542,9 +542,11 @@ def _run_cycle(client, config, stop, claimed, stage="discovery"):
     settings = config["discovery"]
     pool_context = nullcontext(settings["_pool"]) if "_pool" in settings else concurrent.futures.ThreadPoolExecutor(max_workers=settings["concurrency"])
     with pool_context as ping_pool:
+        rate = (config.get("ptr", {}).get("queries_per_second", 5) if stage == "ptr"
+                else config["discovery"]["packets_per_second"] / (2 if stage == "asset-ports" else 1))
         runtime_config = {**config, "discovery": {
             **config["discovery"], "_pool": ping_pool,
-            "_limiter": RateLimiter(config["discovery"]["packets_per_second"]/(2 if stage=="asset-ports" else 1)),
+            "_limiter": RateLimiter(rate),
             "_udp_lock": threading.Lock(),
         }}
         if "_coordinator_pool" in settings:

@@ -427,7 +427,13 @@ def build_ptr(row):
                        if (name := normalized_hostname(value)) is not None})
     ptr_names = row.get('ptr_names') or []
     answered = row['result'] == 'answered' and bool(ptr_names)
-    matches = all(normalized_hostname(name) in expected for name in ptr_names) if answered and expected else None
+    # Only short PTR answers may match the first label; preserve FQDN comparisons.
+    def matches_expected(value):
+        name = normalized_hostname(value)
+        return name is not None and (name in expected or (
+            '.' not in name and any(name == candidate.split('.')[0] for candidate in expected)))
+
+    matches = all(matches_expected(name) for name in ptr_names) if answered and expected else None
     if answered:
         comparison = ('Match' if matches else 'Mismatch' if expected else
                       'Unnamed' if row['registered'] else 'Unregistered')

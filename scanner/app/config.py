@@ -1,5 +1,6 @@
 import math
 import os
+from ipaddress import ip_address
 from pathlib import Path
 import socket
 from urllib.parse import urlsplit
@@ -54,8 +55,20 @@ def load_config(*, scans_override=None, mode_override=None):
     if not isinstance(ptr, dict):
         raise ValueError("ptr must be a mapping")
     ptr.setdefault("enabled", False)
+    ptr.setdefault("queries_per_second", 5)
+    rate = ptr["queries_per_second"]
+    if isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate <= 0:
+        raise ValueError("ptr.queries_per_second must be positive and finite")
     if not isinstance(ptr["enabled"], bool):
         raise ValueError("ptr.enabled must be true or false")
+    ptr.setdefault("server", None)
+    if ptr["server"] is not None:
+        if not isinstance(ptr["server"], str):
+            raise ValueError("ptr.server must be a valid IP address or null")
+        try:
+            ptr["server"] = str(ip_address(ptr["server"]))
+        except ValueError:
+            raise ValueError("ptr.server must be a valid IP address or null") from None
     targets = config.setdefault("targets", {})
     if not isinstance(targets, dict):
         raise ValueError("targets must be a mapping")

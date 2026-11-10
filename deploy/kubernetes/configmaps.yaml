@@ -85,6 +85,8 @@ data:
         timeout_seconds: 2
     ptr:
       enabled: false
+      server: null # DNS server IP for PTR queries; null uses the Pod resolver.
+      queries_per_second: 5 # Shared across PTR networks per scanner; positive fractional values are allowed.
     targets:
       enabled: true
     udp:

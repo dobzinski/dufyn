@@ -117,9 +117,9 @@ class PtrRecord(BaseModel):
         try:
             import re
             name = normalize_name(value)
-            if len(name.split('.')) < 2 or any(not re.fullmatch(
+            if any(not re.fullmatch(
                 r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', label) for label in name.split('.')):
-                raise ValueError("PTR must contain a valid domain")
+                raise ValueError("PTR must contain a valid hostname")
             try:
                 ip_address(name)
             except ValueError:

@@ -18,7 +18,7 @@ def valid_ptr_domain(value):
     import re
     try:
         name = normalize_name(value)
-        if len(name.split('.')) < 2 or any(not re.fullmatch(
+        if any(not re.fullmatch(
             r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', label) for label in name.split('.')):
             return None
         try:
@@ -31,9 +31,9 @@ def valid_ptr_domain(value):
 
 
 def ptr_server(config):
-    settings = config.get("dns", {})
+    settings = config.get("ptr", {})
     if settings.get("server"):
-        return settings["server"], settings.get("port", 53)
+        return settings["server"], 53
     resolver = dns.resolver.Resolver()
     for server in resolver.nameservers:
         if isinstance(server, str):
@@ -41,7 +41,7 @@ def ptr_server(config):
                 return str(ip_address(server)), resolver.port
             except ValueError:
                 continue
-    raise ValueError("No DNS resolver available for PTR; configure dns.server")
+    raise ValueError("No DNS resolver available for PTR; configure ptr.server")
 
 
 def check_ptr(task, config, stop):
@@ -105,13 +105,13 @@ def check_ptr(task, config, stop):
 
 
 def check_network_ptr(cidr, config, stop):
-    """Sweep all usable addresses through the container resolver, never gated by ping."""
+    """Sweep usable addresses through the PTR or system resolver, never gated by ping."""
     import concurrent.futures
     from contextlib import nullcontext
     from ipaddress import ip_network
 
     settings = config["discovery"]
-    server, port = ptr_server({})  # Local resolv.conf, independent of AXFR dns.server.
+    server, port = ptr_server(config)  # Independent of AXFR dns.server.
     ips = iter(ip_network(cidr).hosts())
     pending = set()
     observations = []

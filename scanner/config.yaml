@@ -18,6 +18,8 @@ discovery:
 # Global PTR switch; only networks with PTR enabled in Networks are queried.
 ptr:
   enabled: false
+  server: null # DNS server IP for PTR queries; null uses the system resolver.
+  queries_per_second: 10 # Shared across PTR networks per scanner; 0.1 means one query every 10 seconds. Avoid values above 20 without assessing DNS capacity.
 
 # Enable on only one scanner per Site; controls target hosts, ports, HTTP and certificates.
 targets:

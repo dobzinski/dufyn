@@ -27,6 +27,8 @@ FIELDS = [
     ("discovery.recheck.timeout_seconds", "Discovery / Recheck timeout (seconds)", "number"),
     ("targets.enabled", "Targets / Enabled", "boolean"),
     ("ptr.enabled", "PTR / Enabled", "boolean"),
+    ("ptr.server", "PTR / Server", "text"),
+    ("ptr.queries_per_second", "PTR / Queries per second", "number"),
     ("dns.enabled", "DNS / Enabled", "boolean"),
     ("dns.server", "DNS / Server", "text"),
     ("dns.port", "DNS / Port", "number"),
@@ -57,6 +59,8 @@ def configuration_rows(encrypted):
         value = config
         for part in path.split("."):
             value = value.get(part) if isinstance(value, dict) else None
+        if path == "ptr.server" and value is None:
+            value = "System resolver"
         if kind in ("text", "url"):
             valid = isinstance(value, str)
         elif kind == "boolean":

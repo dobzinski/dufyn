@@ -5,7 +5,12 @@ function dnsPtrStatus(record) {
     const names = record.ptr_names || [];
     if (record.ptr_result === "answered" && names.length) {
         const normalize = name => name.toLowerCase().replace(/\.$/, "");
-        const matches = names.some(name => normalize(name) === normalize(record.name));
+        const expected = normalize(record.name);
+        // Only short PTR answers may match the first label; preserve FQDN comparisons.
+        const matches = names.some(name => {
+            const ptrName = normalize(name);
+            return ptrName === expected || (!ptrName.includes(".") && ptrName === expected.split(".")[0]);
+        });
         return {status: matches ? "valid" : "critical", icon: matches ? "check" : "x",
             detail: (matches ? "PTR matches: " : "PTR differs: ") + names.join(", ")};
     }
