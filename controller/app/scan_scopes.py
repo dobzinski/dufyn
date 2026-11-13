@@ -87,7 +87,7 @@ def asset_snapshot(connection, asset_id, scanner, scope, base_config, dns_server
         return snapshot
     asset = connection.execute("""
         SELECT a.id, host(a.ip) AS ip, a.discovered_hostname FROM asset a
-        WHERE a.id=%s AND a.site_id=%s
+        WHERE a.id=%s AND a.site_id=%s AND a.ip IS NOT NULL
     """ + (""" AND a.status IN ('A','U') AND EXISTS (
         SELECT 1 FROM network n JOIN scanner_network sn ON sn.network_id=n.id AND sn.site_id=n.site_id
         WHERE sn.scanner_id=%s AND n.site_id=a.site_id AND n.enabled='Y' AND a.ip <<= n.cidr)

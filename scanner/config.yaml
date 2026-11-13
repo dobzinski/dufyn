@@ -21,9 +21,16 @@ ptr:
   server: null # DNS server IP for PTR queries; null uses the system resolver.
   queries_per_second: 10 # Shared across PTR networks per scanner; 0.1 means one query every 10 seconds. Avoid values above 20 without assessing DNS capacity.
 
+# Optional NetBIOS queries for discovered IPv4 hosts; collects host names and MAC addresses when available.
+netbios:
+  enabled: false
+  port: 137 # Destination UDP port for NetBIOS node status queries.
+  timeout_seconds: 2 # Maximum wait for each query response, in seconds.
+  attempts: 2 # Maximum query attempts per host when no usable response is received.
+
 # Enable on only one scanner per Site; controls target hosts, ports, HTTP and certificates.
 targets:
-  enabled: true
+  enabled: false
 
 udp:
   quic:
@@ -31,7 +38,7 @@ udp:
     ports: [443, 8080, 8443] # Only assigned UDP ports in this list receive QUIC probes; [] skips all.
     timeout_seconds: 5 # Maximum wait per QUIC probe, in seconds.
 
-# DNS stage runs after Discovery, ports and Targets; works without assigned networks.
+# DNS and PTR stages run before asset discovery; DNS works without assigned networks.
 dns:
   enabled: false # false
   server: null # Authoritative DNS server IP; must permit AXFR from this scanner.

@@ -1,4 +1,4 @@
-new RecordPage(document.getElementById("asset-form"), {
+const assetPage = new RecordPage(document.getElementById("asset-form"), {
     newers: {field: "first_seen"},
     endpoint: "/api/assets",
     table: "#assets-table",
@@ -18,8 +18,12 @@ new RecordPage(document.getElementById("asset-form"), {
         { key: "type_name", label: "Type", render: record => escapeHtml(record.type_name || "\u2014") },
         { key: "operating_system_name", label: "OS", hidden: true, render: record => escapeHtml(record.operating_system_name || "\u2014") },
         { key: "ip", label: "IP Address", type: "ip" },
+        { key: "last_known_ip", label: "Last Known IP", type: "ip", hidden: true },
+        { key: "mac_address", label: "MAC Address", hidden: true, render: record => escapeHtml(record.mac_address || "\u2014") },
         { key: "latency_ms", label: "Latency", type: "number", render: (record) => record.latency_ms == null ? "\u2014" : escapeHtml(record.latency_ms) + " ms" },
         { key: "last_seen", label: "Last Seen", type: "date", render: (record) => record.last_seen ? formatDate(record.last_seen) : "\u2014" },
         { key: "status", label: "Status", render: (record) => `<span class="status-badge ${escapeHtml(record.status)}">${escapeHtml(record.status)}</span>` },
     ],
 });
+
+attachAssetView(assetPage);

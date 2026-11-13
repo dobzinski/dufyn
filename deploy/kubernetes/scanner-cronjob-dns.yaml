@@ -16,7 +16,7 @@ spec:
           terminationGracePeriodSeconds: 600
           containers:
           - name: dufyn-scanner
-            image: docker.io/dobzinski/dufyn:scanner-0.1.1
+            image: docker.io/dobzinski/dufyn:scanner-0.1.2
             imagePullPolicy: IfNotPresent
             workingDir: /opt/dufyn
             env:

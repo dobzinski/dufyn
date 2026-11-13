@@ -89,7 +89,7 @@ EXPIRATION_STATUS = """CASE
 
 CERTIFICATE_SELECT = """SELECT s.name AS site_name,
     CASE WHEN a.id IS NULL THEN NULL ELSE jsonb_build_object(
-        'name',a.display_name,'hostname',a.discovered_hostname,'ip',host(a.ip),
+        'name',a.display_name,'hostname',a.discovered_hostname,'ip',host(a.ip),'last_known_ip',host(a.last_known_ip),
         'port',p.port,'protocol',CASE p.protocol WHEN 'T' THEN 'TCP' WHEN 'U' THEN 'UDP' END)
         END AS assets,
     CASE WHEN t.id IS NULL THEN NULL ELSE jsonb_build_object(
@@ -169,7 +169,7 @@ def timestamp(value):
 def build_certificate(row, now):
     result = {key: row.get(key) for key in (
         "site_name", "notes", "last_seen", "cn", "issuer", "valid_from", "valid_until")}
-    for field, keys in (("assets", ("name", "hostname", "ip", "port", "protocol")),
+    for field, keys in (("assets", ("name", "hostname", "ip", "last_known_ip", "port", "protocol")),
                         ("targets", ("name", "port", "protocol"))):
         entity = row.get(field)
         result[field] = {key: entity.get(key) for key in keys} if entity is not None else None
@@ -311,7 +311,7 @@ def web_checks(limit: int = Limit, offset: int = Offset):
 # Recent inventory uses first discovery/creation dates, never recurring last_seen.
 NEWERS_QUERIES = {
     "assets": """SELECT s.name AS site_name,a.display_name AS name,
-        a.discovered_hostname AS hostname,host(a.ip) AS ip,
+        a.discovered_hostname AS hostname,host(a.ip) AS ip,host(a.last_known_ip) AS last_known_ip,
         CASE a.status WHEN 'A' THEN 'Active' WHEN 'I' THEN 'Inactive' ELSE 'Unknown' END AS status,
         a.first_seen FROM asset a JOIN site s ON s.id=a.site_id
         WHERE a.first_seen >= %(since)s AND a.first_seen <= %(now)s""",
@@ -320,7 +320,7 @@ NEWERS_QUERIES = {
         t.created_at FROM target t JOIN site s ON s.id=t.site_id
         WHERE t.created_at >= %(since)s AND t.created_at <= %(now)s""",
     "ports": """SELECT s.name AS site_name,a.display_name,a.discovered_hostname,
-        host(a.ip) AS ip,t.fqdn,p.port,
+        host(a.ip) AS ip,host(a.last_known_ip) AS last_known_ip,t.fqdn,p.port,
         CASE p.protocol WHEN 'T' THEN 'TCP' WHEN 'U' THEN 'UDP' END AS protocol,
         CASE p.state WHEN 'O' THEN 'open' WHEN 'C' THEN 'closed' END AS state,
         p.response_time_ms,p.first_seen

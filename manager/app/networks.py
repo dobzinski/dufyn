@@ -8,7 +8,7 @@ from psycopg.errors import ForeignKeyViolation, UniqueViolation
 from app.database import get_connection
 
 router = APIRouter(prefix="/api/networks", tags=["networks"])
-COLUMNS = "id, site_id, cidr::text AS cidr, name, enabled, port_mode, ptr_enabled, created_at"
+COLUMNS = "id, site_id, cidr::text AS cidr, name, enabled, port_mode, ptr_enabled, dhcp, created_at"
 
 
 class NetworkInput(BaseModel):
@@ -18,6 +18,7 @@ class NetworkInput(BaseModel):
     name: str | None = Field(default=None, max_length=100)
     enabled: Literal["Y", "N"] = "Y"
     port_mode: Literal["I", "C"] = "I"
+    dhcp: Literal["Y", "N"] = "N"
     ptr_enabled: Literal["Y", "N"] = "N"
 
     @field_validator("name", "cidr", mode="before")
@@ -46,7 +47,7 @@ def list_networks():
     with get_connection() as connection:
         return connection.execute("""
             SELECT n.id, n.site_id, s.name AS site_name, n.cidr::text AS cidr,
-                n.name, n.enabled, n.port_mode, n.ptr_enabled, n.created_at,
+                n.name, n.enabled, n.port_mode, n.ptr_enabled, n.dhcp, n.created_at,
                 CASE WHEN n.port_mode = 'I'
                     THEN (SELECT COUNT(*) FROM site_port_catalog p WHERE p.site_id = n.site_id)
                     ELSE (SELECT COUNT(*) FROM network_port_catalog p WHERE p.network_id = n.id)
@@ -61,9 +62,9 @@ def create_network(network: NetworkInput):
     try:
         with get_connection(read_only=False) as connection:
             result = connection.execute(f"""
-                INSERT INTO network (site_id, cidr, name, enabled, port_mode, ptr_enabled)
-                VALUES (%s, %s::cidr, %s, %s, %s, %s) RETURNING {COLUMNS}
-            """, (network.site_id, network.cidr, network.name, network.enabled, network.port_mode, network.ptr_enabled)).fetchone()
+                INSERT INTO network (site_id, cidr, name, enabled, port_mode, ptr_enabled, dhcp)
+                VALUES (%s, %s::cidr, %s, %s, %s, %s, %s) RETURNING {COLUMNS}
+            """, (network.site_id, network.cidr, network.name, network.enabled, network.port_mode, network.ptr_enabled, network.dhcp)).fetchone()
         return result
     except UniqueViolation:
         raise HTTPException(409, "This network CIDR already exists in the selected site") from None
@@ -77,8 +78,8 @@ def update_network(network_id: int, network: NetworkInput):
         with get_connection(read_only=False) as connection:
             result = connection.execute(f"""
                 UPDATE network SET site_id = %s, cidr = %s::cidr, name = %s,
-                    enabled = %s, port_mode = %s, ptr_enabled = %s WHERE id = %s RETURNING {COLUMNS}
-            """, (network.site_id, network.cidr, network.name, network.enabled, network.port_mode, network.ptr_enabled, network_id)).fetchone()
+                    enabled = %s, port_mode = %s, ptr_enabled = %s, dhcp = %s WHERE id = %s RETURNING {COLUMNS}
+            """, (network.site_id, network.cidr, network.name, network.enabled, network.port_mode, network.ptr_enabled, network.dhcp, network_id)).fetchone()
             if result is None:
                 raise HTTPException(404, "Network not found")
         return result

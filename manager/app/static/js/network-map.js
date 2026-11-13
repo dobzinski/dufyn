@@ -180,12 +180,12 @@ class NetworkMap {
         for (const node of this.nodes.values()) {
             const name = this.assetName(node);
             const item = this.element("g", {class: "network-map-node", transform: `translate(${node.x} ${node.y})`, tabindex: "0", role: "button", "aria-label": `${name}, ${node.type_name}, ${node.ip}`, "aria-pressed": "false", "data-status": node.status});
-            const tooltip = [...new Set([node.ip, node.type_name, name === "\u2014" ? null : name].filter(Boolean))].join("\n");
+            const tooltip = [...new Set([this.assetAddress(node), node.type_name, name === "\u2014" ? null : name].filter(Boolean))].join("\n");
             item.setAttribute("aria-label", tooltip.replaceAll("\n", ", "));
             item.append(this.element("title", {}, tooltip));
             item.append(this.element("rect", {width: 220, height: 94, rx: 10}));
             item.append(this.element("circle", {class: "network-map-status", cx: 201, cy: 18, r: 4}));
-            item.append(this.element("text", {class: "network-map-node-title", x: 14, y: 26}, this.shorten(node.ip, 23)));
+            item.append(this.element("text", {class: "network-map-node-title", x: 14, y: 26}, this.shorten(this.assetAddress(node), 23)));
             item.append(this.element("text", {class: "network-map-node-type", x: 14, y: 49}, this.shorten(node.type_name, 28)));
             item.append(this.element("text", {x: 14, y: 73}, this.shorten(this.nodeFooter(node), 28)));
             item.addEventListener("click", () => this.select(node, item));
@@ -201,11 +201,16 @@ class NetworkMap {
         return this.assetName(node);
     }
 
+    assetAddress(node) {
+        return node.ip || (node.last_known_ip ? `${node.last_known_ip} (last)` : "\u2014");
+    }
+
     assetName(node) {
         return node.display_name?.trim() || node.discovered_hostname?.trim() || "\u2014";
     }
 
     shorten(text, length) {
+        text = String(text ?? "\u2014");
         return text.length > length ? text.slice(0, length - 1) + "\u2026" : text;
     }
 
@@ -224,11 +229,11 @@ class NetworkMap {
         });
         item.classList.add("is-selected");
         item.setAttribute("aria-pressed", "true");
-        this.modal.querySelector("#network-map-selection").textContent = node.ip;
+        this.modal.querySelector("#network-map-selection").textContent = this.assetAddress(node);
         this.details.replaceChildren();
         const parent = node.parent_id == null ? null : this.nodes.get(String(node.parent_id));
         const fields = {
-            "IP Address": node.ip, "Type": node.type_name,
+            "IP Address": node.ip, "Last Known IP": node.last_known_ip, "Type": node.type_name,
             ...(node.kind === "target" ? {} : {"OS": node.operating_system_name}),
             "Name": this.assetName(node),
             "Status": ({A: "Active", I: "Inactive", U: "Unknown"})[node.status] || node.status,

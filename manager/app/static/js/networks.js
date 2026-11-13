@@ -30,6 +30,8 @@ const networksPage = new RecordPage(document.getElementById("network-form"), {
             type: "date",
             render: (record) => formatDate(record.created_at),
         },
+        { key: "dhcp", label: "DHCP", searchValue: record => record.dhcp === "Y" ? "Yes" : "No",
+            render: record => `<span class="status-badge ${record.dhcp === "Y" ? "yes" : "no"}">${record.dhcp === "Y" ? "Yes" : "No"}</span>` },
         { key: "ptr_enabled", label: "PTR", searchValue: record => record.ptr_enabled === "Y" ? "Yes" : "No",
             render: record => `<span class="status-badge ${record.ptr_enabled === "Y" ? "yes" : "no"}">${record.ptr_enabled === "Y" ? "Yes" : "No"}</span>` },
         {

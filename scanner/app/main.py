@@ -1,6 +1,7 @@
 import argparse
 import concurrent.futures
 from contextlib import contextmanager, nullcontext
+from datetime import datetime, timezone
 from ipaddress import ip_network
 import json
 import logging
@@ -18,6 +19,7 @@ from cryptography.x509.oid import NameOID
 import subprocess
 import threading
 import time
+from uuid import uuid4
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen, build_opener, HTTPRedirectHandler, HTTPSHandler
 
@@ -25,8 +27,9 @@ from app.config import configuration_snapshot, load_config, load_version, quic_p
 from app.controller_tls import request_tls_options
 from app.nmap_udp import scan_udp
 from app.dns_sync import run_dns_cycle
-from app.scan_selection import SCAN_ORDER
+from app.scan_selection import SCAN_ORDER, identity_stages
 from app.ptr_scan import check_network_ptr
+from app.asset_identity import identify_hosts, reconcile_cycle
 from app.quic_cert import discover_quic_certificate, check_http3
 
 log = logging.getLogger("scanner")
@@ -147,7 +150,8 @@ def ping(ip, timeout, limiter, stop):
     if result.returncode != 0:
         raise RuntimeError("Ping execution failed; check ICMP capability and routing")
     match = re.search(r"time[=<]([0-9.]+)\s*ms", result.stdout)
-    return {"ip": str(ip), "latency_ms": float(match.group(1)) if match else None}
+    return {"ip": str(ip), "latency_ms": float(match.group(1)) if match else None,
+            "observed_at": datetime.now(timezone.utc).isoformat()}
 
 
 def discover(cidr, settings, stop):
@@ -463,7 +467,10 @@ def execute_task(client, task, config, stop, stage="discovery"):
         if stage == "discovery":
             log.info("Discovery started: task=%s network=%s", task["id"], task["cidr"])
             hosts = discover(task["cidr"], config["discovery"], stop)
+            hosts = identify_hosts(hosts, config, stop)
             body = {**worker, "complete": True, "hosts": hosts}
+            if config.get("_identity_cycle"):
+                body["identity_cycle"] = config["_identity_cycle"]
         elif stage == "ptr":
             log.info("Network PTR started: task=%s network=%s", task["id"], task["cidr"])
             body = {**worker, "complete": True, "scope": "ptr", "hosts": [],
@@ -685,14 +692,27 @@ def run(config, stop):
         dns_success = True
         log.info("Scanner macros: %s", ", ".join(current))
         with execution_resources(config) as cycle_config:
-            for name in SCAN_ORDER:
-                if stop.is_set():
-                    break
-                if name not in current:
-                    continue
-                result = functions[name](client, cycle_config, stop)
-                if name == "dns":
-                    dns_success = result
+            cycle_config = {**cycle_config, '_identity_cycle': {
+                'cycle_id': str(uuid4()), **identity_stages(config)}}
+            discovery_started = False
+            discovery_reconciled = False
+            try:
+                for name in SCAN_ORDER:
+                    if stop.is_set():
+                        break
+                    if name not in current:
+                        continue
+                    if name == "assets":
+                        discovery_started = True
+                    result = functions[name](client, cycle_config, stop)
+                    if name == "assets":
+                        reconcile_cycle(client,cycle_config)
+                        discovery_reconciled = True
+                    if name == "dns":
+                        dns_success = result
+            finally:
+                if discovery_started and not discovery_reconciled:
+                    reconcile_cycle(client,cycle_config)
         if config["execution"]["mode"] == "once":
             if not dns_success and not stop.is_set():
                 raise RuntimeError("One or more DNS zones failed to synchronize")

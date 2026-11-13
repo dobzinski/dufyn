@@ -8,15 +8,15 @@ complete runs do not contain a second implementation of each check.
 
 | Macro | Work | Scope |
 | --- | --- | --- |
-| assets | ICMP discovery and reachability | Enabled assigned IPv4 Networks |
+| dns | Complete AXFR imports of configured forward zones | dns.server / dns.zones, authenticated Site |
+| ptr | Reverse queries for every usable network IP, independent of ping/assets | Enabled assigned IPv4 Networks with PTR = Yes, when ptr.enabled |
+| assets | ICMP discovery and reachability; optional NetBIOS name/MAC collection | Enabled assigned IPv4 Networks |
 | targets | Resolve and ping configured Targets; update status/latency | Eligible Targets in scanner Site |
 | ports | Asset TCP/UDP ports and Target HTTP/HTTPS/HTTP3 service checks | Assigned-network assets and eligible Site Targets |
 | exclusive | Inventory ports absent from the effective scan configuration; individual destination only | Assigned-network assets and eligible Site Targets |
 | certificates | TLS/QUIC certificates from existing open inventory ports | Assigned-network assets and eligible Site Targets |
-| dns | Complete AXFR imports of configured forward zones | dns.server / dns.zones, authenticated Site |
-| ptr | Reverse queries for every usable network IP, independent of ping/assets | Enabled assigned IPv4 Networks with PTR = Yes, when ptr.enabled |
 
-Canonical order: **assets -> targets -> ports -> exclusive -> certificates -> dns -> ptr**.
+Canonical order: **dns -> ptr -> assets -> targets -> ports -> exclusive -> certificates**.
 Earlier stages are not inserted automatically. Ports-only uses current inventory;
 certificates-only uses existing open ports; PTR-only scans network addresses
 without discovery. A /24 PTR run queries 254 usable IPs, even with no assets.
@@ -65,10 +65,53 @@ are ignored. Selection is by function, not by an individual host/IP selector.
 - `dns.enabled` controls imports in all mode. Explicit --scans dns activates them
   but requires a configured authoritative server and nonempty zones.
 - `ptr.enabled` is a root-level switch, independent of dns.enabled. Network PTR
-  opt-in and scanner assignment are still required. It uses the local container
-  resolver, not the AXFR server. No assigned eligible networks means no PTR tasks.
+  opt-in and scanner assignment are still required. `ptr.server` selects the DNS
+  server for reverse queries; null uses the container/Pod resolver, not necessarily
+  the host resolver or AXFR server. No assigned eligible networks means no PTR tasks.
 - With all selected, DNS enabled and no assigned enabled networks, the DNS-only
-  role skips the earlier macros and runs DNS/PTR; PTR then has no eligible network.
+  role runs only DNS/PTR and skips the remaining stages; PTR has no eligible network.
+
+## Asset reconciliation and NetBIOS
+
+Selected, enabled DNS/PTR stages collect before discovery. Source flags also
+control whether reconciliation can read the Site's existing DNS/PTR tables,
+independently of macro selection; PTR additionally requires Network PTR = Yes.
+Thus endpoints/assets-only runs can reuse existing names without new DNS queries.
+Missing data on the first run does not prevent recording a responding host.
+
+Discovery observations use the internal identification queue. Existing assets
+receive ICMP status and latency immediately. After assets discovery completes,
+Controller reconciles that cycle before ports and certificates begin, preserving
+original ping timestamps and metadata. Successful reconciliation removes the
+cycle's entries; failures are retried and reported with observations retained.
+With both sources disabled, the queue is still consumed without reading DNS/PTR.
+Standalone DNS/PTR and exclusive runs do not discover assets or create this queue.
+
+For DHCP networks, identity matching prefers a unique NetBIOS MAC, then the DNS A
+name, then PTR. A contradictory known MAC is not overridden by a name match.
+Without those identifiers, IP matching remains a fallback with DHCP reuse risks.
+For DHCP = No, Site/IP remains the identity even when MAC or names change.
+
+NetBIOS collection is optional in `scanner/config.yaml` and the Kubernetes scanner
+ConfigMap:
+
+```yaml
+netbios:
+  enabled: false
+  port: 137
+  timeout_seconds: 2
+  attempts: 2
+```
+
+When enabled, the assets macro queries discovered hosts over UDP, independently
+of DHCP and DNS/PTR switches. It fills an empty Name and stores a valid MAC when
+provided; it does not supply Hostname. A unique MAC can identify DHCP assets. Missing
+or zero MAC values do not erase a stored MAC. Availability depends on the target
+service and network access. These settings are synchronized to Controller and
+displayed in Scanner details.
+
+See [Asset hostnames and DHCP](DNS.md#asset-hostnames-and-dhcp) for name precedence
+and identity limitations.
 
 ## Modes and timing
 

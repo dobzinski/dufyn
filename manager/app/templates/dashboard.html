@@ -3,6 +3,7 @@
     <link rel="stylesheet" href="/static/css/chart.css?v=4">
 {% endblock %}
 {% block content %}
+    {% if check_updates %}<p id="update-notice" class="message" role="status" aria-live="polite"></p>{% endif %}
     <div class="summary-grid">
         <article class="summary-card">
             <div class="card-label">
@@ -250,6 +251,7 @@
     </section>
 {% endblock %}
 {% block scripts %}
+    {% if check_updates %}<script src="/static/js/update-check.js?v=2"></script>{% endif %}
     {% if inventory_connected %}
         <script src="/static/js/chart.js?v=6"></script>
         <script src="/static/js/dashboard.js?v=33"></script>

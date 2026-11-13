@@ -1,5 +1,24 @@
 # DEVELOPMENT
 
+## Release versions
+
+Before building and publishing a release, review the version references:
+
+- Update `manager/version.yaml`, `controller/version.yaml` and
+  `scanner/version.yaml` for the components being released. The database has no
+  `version.yaml`.
+- Update the image tags in `deploy/docker/.env.dev.example` to match the images
+  being built. Review the local `deploy/docker/.env` separately; never commit it.
+- Review the deployment manifests for image references that also need updating.
+- Once the images and release instructions are published, update
+  `releases/latest.txt` with the latest stable version, for example `0.1.2`.
+  The Manager reads this public file to display update notifications when
+  `check_updates` is enabled. Do not advance it before the release is available.
+
+Keep the Manager version aligned with the stable release used for update
+notifications. See [Docker Hub](DOCKERHUB.md) for image publication and
+[Database upgrades](UPGRADES.md) for versioned SQL files.
+
 ## Docker
 
 1. Install and start Docker on openSUSE

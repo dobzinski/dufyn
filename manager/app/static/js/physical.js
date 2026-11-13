@@ -233,11 +233,11 @@ class PhysicalMap extends NetworkMap {
         for (const [id, point] of this.draft) {
             const node = this.nodes.get(id);
             if (!node) continue;
-            const item = this.element("g", {class: "network-map-node physical-map-node" + (this.editing ? " is-draggable" : ""), transform: `translate(${point.x * this.plan.width} ${point.y * this.plan.height})`, "data-mapping-id": id, "data-status": node.status, role: "button", tabindex: "0", "aria-pressed": "false", "aria-label": `${node.ip}, ${node.type_name}, ${this.assetName(node)}`});
-            item.append(this.element("title", {}, `${node.ip}\n${node.type_name}\n${this.assetName(node)}`));
+            const item = this.element("g", {class: "network-map-node physical-map-node" + (this.editing ? " is-draggable" : ""), transform: `translate(${point.x * this.plan.width} ${point.y * this.plan.height})`, "data-mapping-id": id, "data-status": node.status, role: "button", tabindex: "0", "aria-pressed": "false", "aria-label": `${this.assetAddress(node)}, ${node.type_name}, ${this.assetName(node)}`});
+            item.append(this.element("title", {}, `${this.assetAddress(node)}\n${node.type_name}\n${this.assetName(node)}`));
             item.append(this.element("circle", {class: "network-map-status", r: 9}));
             item.append(this.element("rect", {x: 14, y: -23, width: 176, height: 64, rx: 6}));
-            item.append(this.element("text", {class: "network-map-node-title", x: 22, y: -5}, this.shorten(node.ip, 20)));
+            item.append(this.element("text", {class: "network-map-node-title", x: 22, y: -5}, this.shorten(this.assetAddress(node), 20)));
             item.append(this.element("text", {class: "network-map-node-type", x: 22, y: 14}, this.shorten(node.type_name, 24)));
             item.append(this.element("text", {x: 22, y: 32}, this.shorten(this.assetName(node), 24)));
             item.addEventListener("click", () => this.select(node, item));
@@ -278,7 +278,7 @@ class PhysicalMap extends NetworkMap {
             button.draggable = this.editing;
             button.disabled = !this.editing || this.saving;
             const ip = document.createElement("strong"), name = document.createElement("span");
-            ip.textContent = node.ip; name.textContent = this.assetName(node);
+            ip.textContent = this.assetAddress(node); name.textContent = this.assetName(node);
             button.append(ip, name);
             button.addEventListener("dragstart", event => {
                 event.dataTransfer.setData("application/x-discovery-asset", id);

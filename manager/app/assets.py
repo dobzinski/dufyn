@@ -15,7 +15,7 @@ class AssetCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     site_id: int = Field(gt=0)
-    ip: str
+    ip: str | None = None
     asset_type_id: int | None = Field(default=None, gt=0)
     operating_system_id: int | None = Field(default=None, gt=0)
     display_name: str | None = Field(default=None, max_length=255)
@@ -28,6 +28,8 @@ class AssetCreate(BaseModel):
     @field_validator("ip")
     @classmethod
     def validate_ip(cls, value):
+        if value is None or value == "":
+            return None
         if "%" in value:
             raise ValueError("Scoped IP addresses are not supported")
         return str(ip_address(value))
@@ -46,14 +48,16 @@ def asset_conflict(error):
 
 @router.post("", status_code=201)
 def create_asset(asset: AssetCreate):
+    if asset.ip is None:
+        raise HTTPException(422, "An IP address is required for a new asset")
     try:
         with get_connection(read_only=False) as connection:
             row = connection.execute(
-                f"""INSERT INTO asset (site_id, ip, display_name, asset_type_id, operating_system_id, discovered_by_icmp,
+                f"""INSERT INTO asset (site_id, ip, last_known_ip, display_name, asset_type_id, operating_system_id, discovered_by_icmp,
                     discovered_hostname, latency_ms, status, first_seen, last_seen, last_seen_active)
-                VALUES (%s, %s, %s, %s, %s, 'N', NULL, NULL, 'U', NOW(), NULL, NULL)
+                VALUES (%s, %s, %s, %s, %s, %s, 'N', NULL, NULL, 'U', NOW(), NULL, NULL)
                 RETURNING {ASSET_COLUMNS}""",
-                (asset.site_id, asset.ip, asset.display_name, asset.asset_type_id, asset.operating_system_id),
+                (asset.site_id, asset.ip, asset.ip, asset.display_name, asset.asset_type_id, asset.operating_system_id),
             ).fetchone()
         return build_asset(row)
     except (UniqueViolation, ForeignKeyViolation) as error:
@@ -65,9 +69,9 @@ def update_asset(asset_id: int, asset: AssetCreate):
     try:
         with get_connection(read_only=False) as connection:
             row = connection.execute(
-                f"""UPDATE asset SET site_id = %s, ip = %s, display_name = %s, asset_type_id = %s, operating_system_id = %s
+                f"""UPDATE asset SET site_id = %s, last_known_ip = COALESCE(%s::inet, ip, last_known_ip), ip = %s, display_name = %s, asset_type_id = %s, operating_system_id = %s
                 WHERE id = %s RETURNING {ASSET_COLUMNS}""",
-                (asset.site_id, asset.ip, asset.display_name, asset.asset_type_id, asset.operating_system_id, asset_id),
+                (asset.site_id, asset.ip, asset.ip, asset.display_name, asset.asset_type_id, asset.operating_system_id, asset_id),
             ).fetchone()
             if row is None:
                 raise HTTPException(status_code=404, detail="Asset not found")

@@ -15,6 +15,9 @@
                 <input id="network-name" name="name" maxlength="100" autocomplete="off">
                 <label for="network-enabled">Enabled</label>
                 <select id="network-enabled" name="enabled"><option value="Y">Yes</option><option value="N">No</option></select>
+                <label for="network-dhcp">DHCP</label>
+                <select id="network-dhcp" name="dhcp" aria-describedby="network-dhcp-hint"><option value="N">No</option><option value="Y">Yes</option></select>
+                <p id="network-dhcp-hint" class="form-hint">Track assets with dynamic IPs by hostname. Optional NetBIOS scanning collects display names and MAC addresses.</p>
                 <label for="network-ptr">PTR</label>
                 <select id="network-ptr" name="ptr_enabled" aria-describedby="network-ptr-hint"><option value="N">No</option><option value="Y">Yes</option></select>
                 <p id="network-ptr-hint" class="form-hint">Query reverse DNS for this network, including IPs without ping replies.</p>
@@ -34,8 +37,8 @@
         <div class="panel-body">
             <div class="table-wrapper">
                 <table id="networks-table" class="data-table record-table">
-                    <thead><tr><th>#</th><th>Site</th><th>CIDR</th><th>Name</th><th>Type</th><th>Ports</th><th>Created</th><th>PTR</th><th>Enabled</th><th>Actions</th></tr></thead>
-                    <tbody><tr><td colspan="10" class="table-message">Loading networks...</td></tr></tbody>
+                    <thead><tr><th>#</th><th>Site</th><th>CIDR</th><th>Name</th><th>Type</th><th>Ports</th><th>Created</th><th>DHCP</th><th>PTR</th><th>Enabled</th><th>Actions</th></tr></thead>
+                    <tbody><tr><td colspan="11" class="table-message">Loading networks...</td></tr></tbody>
                 </table>
             </div>
             <p id="networks-message" class="message" role="status" aria-live="polite"></p>
@@ -46,5 +49,5 @@
 {% endblock %}
 {% block scripts %}
     <script src="/static/js/port-selection.js?v=4"></script>
-    <script src="/static/js/networks.js?v=8"></script>
+    <script src="/static/js/networks.js?v=9"></script>
 {% endblock %}

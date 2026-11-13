@@ -1,5 +1,5 @@
 """Macro scan selection only: never accepts host/IP selectors."""
-SCAN_ORDER = ("assets", "targets", "ports", "exclusive", "certificates", "dns", "ptr")
+SCAN_ORDER = ("dns", "ptr", "assets", "targets", "ports", "exclusive", "certificates")
 
 
 def normalize_scans(value):
@@ -19,3 +19,8 @@ def normalize_scans(value):
     if len(selected) != len(set(selected)):
         raise ValueError("Duplicate scan names")
     return [name for name in SCAN_ORDER if name in selected], True
+
+
+def identity_stages(config):
+    return {name + '_enabled': config.get(name, {}).get('enabled', False)
+            for name in ('dns', 'ptr')}

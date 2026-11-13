@@ -1,0 +1,18 @@
+    <dialog id="asset-view-modal" class="confirm-modal" aria-labelledby="asset-view-title">
+        <h2 id="asset-view-title">Asset details</h2>
+        <dl class="network-map-details">
+            {% for field, label in [('site_name', 'Site'),
+                ('display_name', 'Name'), ('discovered_hostname', 'Hostname'),
+                ('ip', 'IP Address'), ('last_known_ip', 'Last Known IP'), ('mac_address', 'MAC Address'),
+                ('type_name', 'Type'), ('operating_system_name', 'OS'),
+                ('discovered_by_icmp', 'Discovered by ICMP'), ('latency_ms', 'Latency (ms)'),
+                ('status', 'Status'), ('first_seen', 'First Seen'), ('last_seen', 'Last Seen'),
+                ('last_seen_active', 'Last Active')] %}
+            <dt>{{ label }}</dt>
+            <dd data-detail="{{ field }}"></dd>
+            {% endfor %}
+        </dl>
+        <form method="dialog" class="form-actions">
+            <button class="secondary-button" value="close" data-button-icon="cancel">Close</button>
+        </form>
+    </dialog>

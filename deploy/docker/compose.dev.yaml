@@ -45,6 +45,8 @@ services:
       FORWARDED_ALLOW_IPS: "${FORWARDED_ALLOW_IPS:-127.0.0.1}"
       MANAGER_LOGIN_USER: "${MANAGER_LOGIN_USER:-}"
       MANAGER_LOGIN_PASSWORD: "${MANAGER_LOGIN_PASSWORD:-}"
+      MANAGER_UPDATE_CACHE_SECONDS: "${MANAGER_UPDATE_CACHE_SECONDS:-21600}" # Success only; 0 disables caching.
+      MANAGER_UPDATE_URL: "${MANAGER_UPDATE_URL:-https://raw.githubusercontent.com/dobzinski/dufyn/main/releases/latest.txt}"
       MANAGER_PUBLIC_ORIGIN: "${MANAGER_PUBLIC_ORIGIN:-}"
       PKI_MASTER_KEY: "${PKI_MASTER_KEY:?Set PKI_MASTER_KEY in deploy/docker/.env}"
     depends_on:

@@ -29,6 +29,7 @@ from app.targets import router as targets_router
 from app.config import load_config, load_version
 from app.settings_view import settings_sections
 from app.controller_status import controller_available
+from app.updates import UpdateChecker
 from app.ptr_attention import load_ptr_attention
 from app.database import get_connection
 from app.newers import router as newers_router
@@ -44,6 +45,7 @@ config = load_config()
 version = load_version()
 app = FastAPI(title="Network Discovery Manager", version=version)
 access = AccessControl(lambda: config)
+update_checker = UpdateChecker()
 app.middleware("http")(access.middleware)
 
 
@@ -103,6 +105,11 @@ def controller_status():
     return JSONResponse(content={"available": available}, headers={"Cache-Control": "no-store"})
 
 
+@app.get("/api/updates")
+def updates():
+    return update_checker.check(version, config["check_updates"])
+
+
 def render_page(request: Request, page: str, title: str, description: str):
     return templates.TemplateResponse(
         request=request,
@@ -118,6 +125,7 @@ def render_page(request: Request, page: str, title: str, description: str):
             "page_description": description,
             "inventory_connected": True,
             "version": version,
+            "check_updates": config["check_updates"],
             "logo_animate": config.get("logo", {}).get("animate", True),
             "settings_sections": settings_sections(config) if page == "settings" else [],
         },

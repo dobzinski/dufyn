@@ -115,7 +115,7 @@ def list_mapping(topology_view_id: Annotated[int | None, Query(gt=0)] = None):
     with get_connection() as connection:
         return connection.execute("""SELECT m.id,m.topology_view_id,m.asset_id,m.parent_id,m.site_id,m.created_at,
             v.name AS view_name,v.type AS view_type,s.name AS site_name,COALESCE(c.name,'—') AS type_name,
-            host(a.ip) AS ip, a.display_name,a.discovered_hostname,
+            host(a.ip) AS ip,host(a.last_known_ip) AS last_known_ip, a.display_name,a.discovered_hostname,
             concat_ws(' - ',host(a.ip),COALESCE(NULLIF(a.display_name,''),NULLIF(a.discovered_hostname,''))) AS name,
             CASE WHEN p.id IS NULL THEN NULL ELSE
                 concat_ws(' - ',host(pa.ip),COALESCE(NULLIF(pa.display_name,''),NULLIF(pa.discovered_hostname,''))) END AS parent_name
@@ -205,7 +205,7 @@ def list_logical_views():
 
 def logical_nodes(connection, view_ids):
     return connection.execute("""SELECT m.id,m.topology_view_id,m.asset_id,m.parent_id,COALESCE(c.name,'—') AS type_name,
-            host(a.ip) AS ip,a.display_name,a.discovered_hostname,a.operating_system_id,os.name AS operating_system_name,a.status,a.last_seen,a.latency_ms,
+            host(a.ip) AS ip,host(a.last_known_ip) AS last_known_ip,a.display_name,a.discovered_hostname,a.operating_system_id,os.name AS operating_system_name,a.status,a.last_seen,a.latency_ms,
             COALESCE((SELECT jsonb_agg(jsonb_build_object(
                 'port',p.port,'protocol',CASE p.protocol WHEN 'T' THEN 'TCP' ELSE 'UDP' END,
                 'state',CASE p.state WHEN 'O' THEN 'open' ELSE 'closed' END)

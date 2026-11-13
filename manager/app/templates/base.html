@@ -6,7 +6,7 @@
         <title>{{ page_title }} | DUFYN</title>
         <link rel="stylesheet" href="/static/css/app.css?v=45">
         <link rel="stylesheet" href="/static/css/table.css?v=11">
-        <link rel="stylesheet" href="/static/css/form.css?v=28">
+        <link rel="stylesheet" href="/static/css/form.css?v=30">
         <link rel="icon" type="image/png" href="/static/favicon/favicon.png">
         {% if page in ['base64', 'subnet', 'time', 'certificate-inspector', 'texts'] %}<link rel="stylesheet" href="/static/css/tool-results.css?v=5">{% endif %}
         {% block styles %}{% endblock %}
@@ -205,7 +205,7 @@
             </section>
             {% include "page-footer.html" %}
         </main>
-        <div id="record-actions" class="row-actions-menu{% if page in ['passwords', 'scanners', 'sites', 'networks', 'targets', 'selfsignedcerts', 'dns', 'links', 'diagrams', 'logical', 'physical'] %} scanner-actions-menu{% endif %}{% if page in ['selfsignedcerts', 'links', 'diagrams', 'logical', 'physical'] %} topology-actions-menu{% endif %}" role="menu" aria-label="Record actions" hidden>
+        <div id="record-actions" class="row-actions-menu{% if page in ['assets', 'certificates', 'passwords', 'scanners', 'sites', 'networks', 'targets', 'selfsignedcerts', 'dns', 'links', 'diagrams', 'logical', 'physical'] %} scanner-actions-menu{% endif %}{% if page in ['selfsignedcerts', 'links', 'diagrams', 'logical', 'physical'] %} topology-actions-menu{% endif %}" role="menu" aria-label="Record actions" hidden>
             {% if page == 'dns' %}
             <button data-action="add-target" class="row-action-custom" type="button" role="menuitem"><span class="targets-icon action-icon" aria-hidden="true"></span>Add to Target</button>
             {% else %}
@@ -236,7 +236,7 @@
             <button data-action="copy-password" class="row-action-custom" type="button" role="menuitem" data-button-icon="copy">Copy Password</button>
             <button data-action="copy-url" class="row-action-custom" type="button" role="menuitem" data-button-icon="copy" hidden>Copy URL</button>
             {% endif %}
-            {% if page == 'certificates' %}
+            {% if page in ['certificates', 'assets'] %}
             <button data-action="view" class="row-action-custom" type="button" role="menuitem"><span class="certificate-view-icon action-icon" aria-hidden="true"></span>View</button>
             {% endif %}
             {% if page in ['selfsignedcerts'] %}

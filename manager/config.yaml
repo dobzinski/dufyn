@@ -1,3 +1,5 @@
+check_updates: true
+
 access:
   login: false
   session: 3600 # Seconds without user activity before signing out.

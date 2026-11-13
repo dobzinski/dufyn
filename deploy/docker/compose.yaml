@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: docker.io/dobzinski/dufyn:database-0.1.1
+    image: docker.io/dobzinski/dufyn:database-0.1.2
     container_name: dufyn-database
     entrypoint: ["bash", "/opt/dufyn/database/control.sh"]
     command: ["postgres"]
@@ -25,7 +25,7 @@ services:
     # Database is reachable only on the Docker network.
 
   manager:
-    image: docker.io/dobzinski/dufyn:manager-0.1.1
+    image: docker.io/dobzinski/dufyn:manager-0.1.2
     container_name: dufyn-manager
     restart: unless-stopped
     security_opt:
@@ -41,6 +41,8 @@ services:
       FORWARDED_ALLOW_IPS: "${FORWARDED_ALLOW_IPS:-127.0.0.1}"
       MANAGER_LOGIN_USER: "${MANAGER_LOGIN_USER:-}"
       MANAGER_LOGIN_PASSWORD: "${MANAGER_LOGIN_PASSWORD:-}"
+      MANAGER_UPDATE_CACHE_SECONDS: "${MANAGER_UPDATE_CACHE_SECONDS:-21600}" # Success only; 0 disables caching.
+      MANAGER_UPDATE_URL: "${MANAGER_UPDATE_URL:-https://raw.githubusercontent.com/dobzinski/dufyn/main/releases/latest.txt}"
       MANAGER_PUBLIC_ORIGIN: "${MANAGER_PUBLIC_ORIGIN:-}"
       PKI_MASTER_KEY: "${PKI_MASTER_KEY:?Set PKI_MASTER_KEY in deploy/docker/.env}"
     depends_on:
@@ -62,7 +64,7 @@ services:
       - dufyn_backend
 
   controller:
-    image: docker.io/dobzinski/dufyn:controller-0.1.1
+    image: docker.io/dobzinski/dufyn:controller-0.1.2
     container_name: dufyn-controller
     restart: unless-stopped
     security_opt:
@@ -94,7 +96,7 @@ services:
       - dufyn_backend
 
   scanner:
-    image: docker.io/dobzinski/dufyn:scanner-0.1.1
+    image: docker.io/dobzinski/dufyn:scanner-0.1.2
     container_name: dufyn-scanner
     profiles: ["scanner"]
     depends_on:

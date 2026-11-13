@@ -55,8 +55,9 @@ CREATE TABLE network (
     cidr CIDR NOT NULL,
     name VARCHAR(100),
     enabled CHAR(1) NOT NULL DEFAULT 'Y' CHECK (enabled IN ('Y', 'N')),
-    -- I: inherit site ports; C: use only explicitly assigned network ports
+    dhcp CHAR(1) NOT NULL DEFAULT 'N' CHECK (dhcp IN ('Y','N')),
     ptr_enabled CHAR(1) NOT NULL DEFAULT 'N' CHECK (ptr_enabled IN ('Y', 'N')),
+    -- I: inherit site ports; C: use only explicitly assigned network ports
     port_mode CHAR(1) NOT NULL DEFAULT 'I' CHECK (port_mode IN ('I', 'C')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE (site_id, cidr),
@@ -126,7 +127,9 @@ COMMENT ON TABLE operating_system IS 'Operating system catalog for inventory ass
 CREATE TABLE asset (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     site_id BIGINT NOT NULL REFERENCES site(id) ON DELETE RESTRICT,
-    ip INET NOT NULL,
+    ip INET,
+    last_known_ip INET,
+    mac_address MACADDR,
     asset_type_id BIGINT REFERENCES asset_type(id) ON DELETE RESTRICT,
     operating_system_id BIGINT REFERENCES operating_system(id) ON DELETE RESTRICT,
     discovered_hostname VARCHAR(255),
@@ -139,6 +142,19 @@ CREATE TABLE asset (
     last_seen_active TIMESTAMPTZ,
     UNIQUE (site_id, ip)
 );
+
+CREATE TABLE discovery_identity (
+    network_id BIGINT NOT NULL REFERENCES network(id) ON DELETE CASCADE,
+    ip INET NOT NULL,
+    hostname VARCHAR(255),
+    identity_status VARCHAR(8) NOT NULL CHECK (identity_status IN ('verified','wait','missing','conflict')),
+    reason VARCHAR(255),
+    first_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    checked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (network_id,ip)
+);
+CREATE INDEX idx_asset_hostname ON asset(site_id,lower(rtrim(discovered_hostname,'.')))
+    WHERE discovered_hostname IS NOT NULL;
 
 CREATE INDEX idx_asset_type ON asset(asset_type_id) WHERE asset_type_id IS NOT NULL;
 CREATE INDEX idx_asset_operating_system ON asset(operating_system_id) WHERE operating_system_id IS NOT NULL;
@@ -236,11 +252,14 @@ CREATE TABLE discovery_task (
     lease_until TIMESTAMPTZ NOT NULL,
     completed_at TIMESTAMPTZ,
     result_hash CHAR(64),
+    config_snapshot JSONB,
+    reconciled_at TIMESTAMPTZ,
     FOREIGN KEY (scanner_id, site_id) REFERENCES scanner(id, site_id) ON DELETE RESTRICT,
     FOREIGN KEY (network_id, site_id) REFERENCES network(id, site_id) ON DELETE RESTRICT
 );
 CREATE UNIQUE INDEX idx_discovery_running ON discovery_task(network_id) WHERE state = 'running';
 CREATE INDEX idx_discovery_history ON discovery_task(network_id, completed_at);
+ALTER TABLE discovery_identity ADD COLUMN task_id UUID REFERENCES discovery_task(id) ON DELETE CASCADE;
 
 CREATE TABLE target_task (
     config_snapshot JSONB,

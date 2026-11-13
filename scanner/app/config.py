@@ -69,6 +69,19 @@ def load_config(*, scans_override=None, mode_override=None):
             ptr["server"] = str(ip_address(ptr["server"]))
         except ValueError:
             raise ValueError("ptr.server must be a valid IP address or null") from None
+    netbios = config.setdefault("netbios", {})
+    if not isinstance(netbios, dict):
+        raise ValueError("netbios must be a mapping")
+    for key, value in {"enabled": False, "port": 137, "timeout_seconds": 2, "attempts": 2}.items():
+        netbios.setdefault(key, value)
+    if not isinstance(netbios["enabled"], bool):
+        raise ValueError("netbios.enabled must be true or false")
+    for key, maximum in (("port", 65535), ("attempts", 5)):
+        if type(netbios[key]) is not int or not 1 <= netbios[key] <= maximum:
+            raise ValueError(f"Invalid netbios.{key}")
+    timeout = netbios["timeout_seconds"]
+    if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or not math.isfinite(timeout) or not 0 < timeout <= 30:
+        raise ValueError("netbios.timeout_seconds must be positive and at most 30")
     targets = config.setdefault("targets", {})
     if not isinstance(targets, dict):
         raise ValueError("targets must be a mapping")

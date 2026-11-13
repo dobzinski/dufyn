@@ -31,6 +31,9 @@ def load_config():
     if not isinstance(config, dict):
         raise ValueError("config.yaml must contain a mapping")
 
+    if type(config.setdefault("check_updates", False)) is not bool:
+        raise ValueError("check_updates must be true or false")
+
     access = config.setdefault("access", {})
     if not isinstance(access, dict):
         raise ValueError("access must contain a mapping")

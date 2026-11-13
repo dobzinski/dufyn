@@ -12,7 +12,8 @@ WARNING_DAYS = TLS_POLICY["expiration"]["warning_days"]
 CRITICAL_DAYS = TLS_POLICY["expiration"]["critical_days"]
 
 ASSET_COLUMNS = """
-    id, site_id, host(ip) AS ip, discovered_hostname, display_name, asset_type_id,
+    id, site_id, host(ip) AS ip, host(last_known_ip) AS last_known_ip, mac_address::text AS mac_address,
+    discovered_hostname, display_name, asset_type_id,
     (SELECT name FROM asset_type WHERE asset_type.id = asset.asset_type_id) AS type_name,
     operating_system_id,
     (SELECT name FROM operating_system WHERE operating_system.id = asset.operating_system_id) AS operating_system_name,
@@ -28,7 +29,7 @@ CERTIFICATE_COLUMNS = """
     c.tls_version, c.cipher, c.first_seen, c.last_seen, c.note
 """
 ASSET_JSON = """
-    CASE WHEN a.id IS NULL THEN NULL ELSE json_build_object('id', a.id, 'site_id', a.site_id, 'ip', host(a.ip),
+    CASE WHEN a.id IS NULL THEN NULL ELSE json_build_object('id', a.id, 'site_id', a.site_id, 'ip', host(a.ip), 'last_known_ip', host(a.last_known_ip),
         'discovered_hostname', a.discovered_hostname,
         'display_name', a.display_name,
         'name', COALESCE(a.display_name, a.discovered_hostname), 'status', a.status) END AS asset
@@ -210,3 +211,4 @@ def summary():
     targets["http_status"] = http_status
     counts["connections"] = connections
     return {"assets": assets, "targets": targets, "ports": ports, "certificates": counts}
+

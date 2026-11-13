@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import re
 from ipaddress import IPv4Address, ip_network
 from datetime import datetime
 from pydantic import model_validator
@@ -11,10 +12,11 @@ import psycopg
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 
 from app.database import get_connection
 from app.config import load_version
+from app.asset_identity import hostname_key, save_discovery, save_presence
 from app.scan_scopes import TARGET_EXCLUSIVE_PORTS, ASSET_EXCLUSIVE_PORTS, ASSET_EXCLUSIVE_NETWORK, target_snapshot, asset_snapshot, ReverseResult, normalize_server, save_reverse, save_network_reverse
 
 app = FastAPI(title="Network Discovery Controller", version=load_version())
@@ -105,7 +107,7 @@ def claim_task(body: DiscoveryClaim, scanner: Scanner):
         # Lock the network before inspecting leases: all workers use the same lock order.
         ptr_filter = " AND n.ptr_enabled='Y'" if body.scope == "ptr" else ""
         network = connection.execute("""
-            SELECT n.id, n.cidr::text AS cidr, n.ptr_enabled FROM network n
+            SELECT n.id, n.cidr::text AS cidr, n.ptr_enabled, n.dhcp FROM network n
             JOIN scanner_network sn ON sn.network_id = n.id AND sn.site_id = n.site_id
             WHERE sn.scanner_id = %s AND n.site_id = %s AND n.enabled = 'Y'
               AND family(n.cidr) = 4
@@ -137,6 +139,7 @@ def claim_task(body: DiscoveryClaim, scanner: Scanner):
         task["scope"] = body.scope
         task["cidr"] = network["cidr"]
         task["ptr_enabled"] = network.get("ptr_enabled", "N")
+        task["dhcp"] = network["dhcp"]
     return {"task": task}
 
 
@@ -170,6 +173,35 @@ class Host(BaseModel):
     ip: IPv4Address
     latency_ms: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     hostname: str | None = Field(default=None, max_length=255)
+    display_name: str | None = Field(default=None, max_length=255)
+    mac_address: str | None = Field(default=None, max_length=17)
+    identity_status: Literal['verified', 'wait', 'missing', 'conflict'] = 'wait'
+    identity_reason: str | None = Field(default=None, max_length=255)
+    observed_at: AwareDatetime | None = None
+
+    @field_validator('hostname')
+    @classmethod
+    def normalize_hostname(cls, value):
+        return hostname_key(value)
+
+    @field_validator('mac_address')
+    @classmethod
+    def normalize_mac(cls, value):
+        if value is None:
+            return None
+        value = value.strip().lower().replace('-',':')
+        if not re.fullmatch(r'(?:[0-9a-f]{2}:){5}[0-9a-f]{2}',value):
+            raise ValueError('Invalid MAC address')
+        data = bytes.fromhex(value.replace(':',''))
+        if not any(data) or data[0] & 1:
+            raise ValueError('MAC address must be a nonzero unicast address')
+        return value
+
+    @model_validator(mode='after')
+    def validate_identity(self):
+        if self.identity_status == 'verified' and not self.hostname:
+            raise ValueError('Verified identity requires a hostname')
+        return self
 
 
 class NetworkReverseObservation(ReverseResult):
@@ -195,11 +227,19 @@ class NetworkReverseResult(BaseModel):
         return values
 
 
+class DiscoveryCycle(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    cycle_id: UUID
+    dns_enabled: bool = False
+    ptr_enabled: bool = False
+
+
 class DiscoveryResult(Claim):
     scope: Literal["discovery", "ptr"] = "discovery"
     complete: Literal[True]
     hosts: list[Host]
     ptr: NetworkReverseResult | None = None
+    identity_cycle: DiscoveryCycle | None = None
 
     @model_validator(mode="after")
     def validate_scope(self):
@@ -216,7 +256,12 @@ class DiscoveryResult(Claim):
 
 
 def result_digest(body):
-    hosts = sorted((host.model_dump(mode="json") for host in body.hosts), key=lambda item: item["ip"])
+    hosts = []
+    for host in body.hosts:
+        excluded = {key for key in ("display_name", "mac_address", "identity_status", "identity_reason", "observed_at")
+                    if key not in host.model_fields_set}
+        hosts.append(host.model_dump(mode="json", exclude=excluded))
+    hosts.sort(key=lambda item: item["ip"])
     if body.ptr is None:
         payload = hosts  # Preserve digest compatibility with older scanners.
     else:
@@ -227,6 +272,8 @@ def result_digest(body):
         payload = {"hosts": hosts, "ptr": ptr}
         if body.scope == "ptr":
             payload["scope"] = "ptr"
+    if body.identity_cycle is not None:
+        payload = {"result": payload, "identity_cycle": body.identity_cycle.model_dump(mode="json")}
     return token_digest(json.dumps(payload, sort_keys=True, separators=(",", ":")))
 
 
@@ -236,7 +283,7 @@ def finish_discovery(task_id: UUID, body: DiscoveryResult, scanner: Scanner):
     with get_connection(read_only=False) as connection:
         # Same network lock as claim prevents an expired result racing a replacement task.
         network = connection.execute("""
-            SELECT n.id, n.cidr::text AS cidr, n.ptr_enabled FROM network n JOIN discovery_task t ON t.network_id = n.id
+            SELECT n.id, n.cidr::text AS cidr, n.ptr_enabled, n.dhcp FROM network n JOIN discovery_task t ON t.network_id = n.id
             JOIN scanner_network sn ON sn.network_id = n.id AND sn.scanner_id = t.scanner_id AND sn.site_id = n.site_id
             WHERE t.id = %s AND t.scanner_id = %s AND t.site_id = %s AND n.enabled = 'Y'
             FOR UPDATE OF n
@@ -268,22 +315,26 @@ def finish_discovery(task_id: UUID, body: DiscoveryResult, scanner: Scanner):
                 raise HTTPException(422, "Network PTR results must cover every usable address of the assigned network")
         ips = [str(host.ip) for host in body.hosts]
         if body.scope == "discovery":
-            connection.execute("""
-                UPDATE asset SET status = 'I', latency_ms = NULL
-                WHERE site_id = %s AND ip <<= %s::cidr AND status = 'A'
-                  AND NOT (ip = ANY(%s::inet[]))
-            """, (scanner["site_id"], network["cidr"], ips))
-            with connection.cursor() as cursor:
-                cursor.executemany("""
-                    INSERT INTO asset (site_id, ip, discovered_hostname, discovered_by_icmp, latency_ms,
-                        status, first_seen, last_seen, last_seen_active)
-                    VALUES (%s, %s, %s, 'Y', %s, 'A', NOW(), NOW(), NOW())
-                    ON CONFLICT (site_id, ip) DO UPDATE SET
-                        discovered_hostname = COALESCE(EXCLUDED.discovered_hostname, asset.discovered_hostname),
-                        discovered_by_icmp = 'Y', latency_ms = EXCLUDED.latency_ms, status = 'A',
-                        first_seen = COALESCE(asset.first_seen, EXCLUDED.first_seen),
-                        last_seen = NOW(), last_seen_active = NOW()
-                """, [(scanner["site_id"], str(h.ip), h.hostname, h.latency_ms) for h in body.hosts])
+            context = body.identity_cycle
+            dns_enabled = context.dns_enabled if context else False
+            ptr_enabled = bool(context and context.ptr_enabled and network['ptr_enabled'] == 'Y')
+            if context is not None:
+                save_presence(connection,scanner,network,body.hosts,task['started_at'])
+                snapshot = {"cycle_id": str(context.cycle_id), "dns_enabled": dns_enabled,
+                            "ptr_enabled": ptr_enabled, "observed_at": task['started_at'].isoformat(),
+                            "hosts": [host.model_dump(mode="json") for host in body.hosts]}
+                connection.execute('UPDATE discovery_task SET config_snapshot=%s::jsonb WHERE id=%s',
+                                   (json.dumps(snapshot),task_id))
+                for host in body.hosts:
+                    connection.execute("""INSERT INTO discovery_identity(network_id,ip,hostname,identity_status,reason,task_id)
+                        VALUES (%s,%s,NULL,'wait','Awaiting identity reconciliation',%s)
+                        ON CONFLICT(network_id,ip) DO UPDATE SET hostname=NULL,identity_status='wait',
+                            reason=EXCLUDED.reason,task_id=EXCLUDED.task_id,first_seen=NOW(),checked_at=NOW()""",
+                        (network['id'],str(host.ip),task_id))
+            else:
+                save_discovery(connection, scanner, network, body.hosts,observed_at=task['started_at'])
+                connection.execute('DELETE FROM discovery_identity WHERE network_id=%s', (network['id'],))
+                connection.execute('UPDATE discovery_task SET reconciled_at=NOW() WHERE id=%s', (task_id,))
         if body.ptr is not None:
             save_network_reverse(connection, scanner, body.ptr, ips if body.scope == "discovery" else None)
         connection.execute("UPDATE discovery_task SET state = 'completed', completed_at = NOW(), result_hash = %s WHERE id = %s", (digest, task_id))
@@ -294,6 +345,42 @@ def finish_discovery(task_id: UUID, body: DiscoveryResult, scanner: Scanner):
     else:
         result["active_hosts"] = len(ips)
     return result
+
+
+class ReconcileCycle(Claim):
+    cycle_id: UUID
+
+
+@app.post("/v1/private/discovery/reconcile")
+def reconcile_discovery(body: ReconcileCycle, scanner: Scanner):
+    processed = 0
+    with get_connection(read_only=False) as connection:
+        tasks = connection.execute("""SELECT * FROM discovery_task
+            WHERE scanner_id=%s AND site_id=%s AND worker_id=%s AND state='completed'
+                AND reconciled_at IS NULL AND config_snapshot->>'cycle_id'=%s
+            ORDER BY started_at,id FOR UPDATE""",
+            (scanner['id'],scanner['site_id'],body.worker_id,str(body.cycle_id))).fetchall()
+        for task in tasks:
+            network = connection.execute("""SELECT n.id,n.cidr::text AS cidr,n.dhcp FROM network n
+                JOIN scanner_network sn ON sn.network_id=n.id AND sn.site_id=n.site_id
+                WHERE n.id=%s AND n.site_id=%s AND sn.scanner_id=%s""",
+                (task['network_id'],scanner['site_id'],scanner['id'])).fetchone()
+            if network is None:
+                raise HTTPException(409,'Discovery network is no longer assigned to this scanner')
+            newer = connection.execute("""SELECT id FROM discovery_task WHERE network_id=%s
+                AND site_id=%s AND scope='discovery' AND reconciled_at IS NOT NULL
+                AND started_at > %s LIMIT 1""",
+                (task['network_id'],scanner['site_id'],task['started_at'])).fetchone()
+            if newer is None:
+                snapshot = task['config_snapshot']
+                hosts = [Host.model_validate(host) for host in snapshot['hosts']]
+                save_discovery(connection,scanner,network,hosts,dns_enabled=snapshot['dns_enabled'],
+                               ptr_enabled=snapshot['ptr_enabled'],observed_at=task['started_at'])
+            connection.execute('DELETE FROM discovery_identity WHERE task_id=%s OR (network_id=%s AND task_id IS NULL)',
+                               (task['id'],task['network_id']))
+            connection.execute('UPDATE discovery_task SET reconciled_at=NOW() WHERE id=%s', (task['id'],))
+            processed += 1
+    return {'state': 'completed', 'reconciled_tasks': processed}
 
 
 class TargetClaim(Claim):

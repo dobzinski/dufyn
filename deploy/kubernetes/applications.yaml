@@ -14,10 +14,20 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: dufyn-manager
-        image: docker.io/dobzinski/dufyn:manager-0.1.1
+        image: docker.io/dobzinski/dufyn:manager-0.1.2
         imagePullPolicy: IfNotPresent
         workingDir: /opt/dufyn
         env:
+        - name: MANAGER_UPDATE_CACHE_SECONDS
+          valueFrom:
+            configMapKeyRef:
+              name: dufyn-manager-config
+              key: MANAGER_UPDATE_CACHE_SECONDS
+        - name: MANAGER_UPDATE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: dufyn-manager-config
+              key: MANAGER_UPDATE_URL
         - name: MANAGER_PUBLIC_ORIGIN
           value: "https://dufyn.example.test" 
         - name: FORWARDED_ALLOW_IPS
@@ -151,7 +161,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: dufyn-controller
-        image: docker.io/dobzinski/dufyn:controller-0.1.1
+        image: docker.io/dobzinski/dufyn:controller-0.1.2
         imagePullPolicy: IfNotPresent
         workingDir: /opt/dufyn
         env:

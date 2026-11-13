@@ -13,7 +13,10 @@ kind: ConfigMap
 metadata:
   name: dufyn-manager-config
 data:
+  MANAGER_UPDATE_CACHE_SECONDS: "21600" # Success only; 0 disables caching.
+  MANAGER_UPDATE_URL: "https://raw.githubusercontent.com/dobzinski/dufyn/main/releases/latest.txt"
   config.yaml: |
+    check_updates: true
     access:
       login: false
       session: 3600
@@ -86,9 +89,14 @@ data:
     ptr:
       enabled: false
       server: null # DNS server IP for PTR queries; null uses the Pod resolver.
-      queries_per_second: 5 # Shared across PTR networks per scanner; positive fractional values are allowed.
+      queries_per_second: 5
+    netbios:
+      enabled: false
+      port: 137
+      timeout_seconds: 2
+      attempts: 2
     targets:
-      enabled: true
+      enabled: false
     udp:
       quic:
         enabled: true

@@ -11,6 +11,9 @@ the operation runs.
 - Upgrade: place `.sql` files in `database/upgrade/` with zero-padded numeric
   prefixes, such as `01_table.sql` and `02_inserts.sql`.
 
+See [Available upgrades](UPGRADES.md) for versioned SQL files and a description
+of each database update.
+
 Restore runs first, then upgrades run in ascending filename order. Each SQL is
 deleted only after successful execution. If an import fails, the original database
 is restored to its original name. On an upgrade failure, startup stops and that SQL

@@ -13,6 +13,8 @@ def settings_sections(config):
         dict(title="Access", description="Manager authentication and session inactivity.", rows=[
             row("access.login", "Require sign in", "Enabled" if config.get("access", {}).get("login", False) else "Disabled", "Credentials are configured through environment variables."),
             row("access.session", "Session inactivity timeout", str(config.get("access", {}).get("session", 3600)) + " seconds", "User activity renews the session; background polling does not.")]),
+        dict(title="Updates", column=1, description="Optional checks for new DUFYN releases.", rows=[
+            row("check_updates", "Check for updates", "Enabled" if config.get("check_updates", False) else "Disabled", "The Manager checks the public version file over HTTPS and caches successful results for six hours. The Dashboard shows only newer versions or check failures. Internet access is required; standard proxy environment variables are supported.")]),
         dict(title="Certificate expiration", column=1, description="Applies to inventory, dashboard, CA and self-signed certificates.", rows=[
             row("tls.expiration.warning_days", "Warning threshold", str(tls["expiration"]["warning_days"]) + " days", "Warning when remaining whole days are at or below this limit, above the critical threshold."),
             row("tls.expiration.critical_days", "Critical threshold", str(tls["expiration"]["critical_days"]) + " days", "Critical when remaining whole days are at or below this limit. Expired certificates always take precedence.")]),
