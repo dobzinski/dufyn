@@ -131,7 +131,7 @@ def get_physical_view(view_id: int):
         connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
         view = physical_view(connection, view_id)
         plan = connection.execute("SELECT width,height,revision,updated_at FROM topology_floor_plan WHERE topology_view_id=%s",(view_id,)).fetchone()
-        nodes = connection.execute("""SELECT m.id,m.asset_id,m.parent_id,COALESCE(c.name,'â€”') AS type_name,
+        nodes = connection.execute("""SELECT m.id,m.asset_id,m.parent_id,COALESCE(c.name,'—') AS type_name,
             host(a.ip) AS ip,host(a.last_known_ip) AS last_known_ip,a.display_name,a.discovered_hostname,a.operating_system_id,os.name AS operating_system_name,a.status,a.last_seen,a.latency_ms,
             pos.x,pos.y,
             COALESCE((SELECT jsonb_agg(jsonb_build_object('port',p.port,

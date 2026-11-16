@@ -2,6 +2,7 @@
 class DiagramMap extends NetworkMap {
     constructor(modal) {
         super(modal,{
+            showNodeName:true,
             endpoint:id=>`/api/diagrams/${encodeURIComponent(id)}/topology`,title:"Diagram",
             missingMessage:"Diagram no longer exists.",emptyMessage:"No resources in this diagram. Add resources first.",
             selectionMessage:"Select an item in the map.",
@@ -84,7 +85,7 @@ class DiagramMap extends NetworkMap {
         const connected = this.links.flatMap(link => String(link.source_id)===String(node.id)
             ? [this.nodes.get(String(link.destination_id))?.ip]
             : String(link.destination_id)===String(node.id) ? [this.nodes.get(String(link.source_id))?.ip] : []);
-        const fields={Site:node.site_name,"Record Type":node.kind==="asset"?"Asset":"Target",
+        const fields={Site:node.site_name,
             "Connected to":[...new Set(connected.filter(Boolean))].join(", ")};
         for(const [name,value] of Object.entries(fields)) {
             const dt=document.createElement("dt"),dd=document.createElement("dd");dt.textContent=name;dd.textContent=value||"\u2014";this.details.append(dt,dd);

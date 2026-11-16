@@ -186,8 +186,12 @@ class NetworkMap {
             item.append(this.element("rect", {width: 220, height: 94, rx: 10}));
             item.append(this.element("circle", {class: "network-map-status", cx: 201, cy: 18, r: 4}));
             item.append(this.element("text", {class: "network-map-node-title", x: 14, y: 26}, this.shorten(this.assetAddress(node), 23)));
-            item.append(this.element("text", {class: "network-map-node-type", x: 14, y: 49}, this.shorten(node.type_name, 28)));
-            item.append(this.element("text", {x: 14, y: 73}, this.shorten(this.nodeFooter(node), 28)));
+            const showNodeName = this.options.showNodeName && node.kind !== "target";
+            if (showNodeName) {
+                item.append(this.element("text", {x: 14, y: 44}, this.shorten(name, 28)));
+            }
+            item.append(this.element("text", {class: "network-map-node-type", x: 14, y: showNodeName ? 63 : 49}, this.shorten(node.type_name, 28)));
+            item.append(this.element("text", {x: 14, y: showNodeName ? 82 : 73}, this.shorten(this.nodeFooter(node), 28)));
             item.addEventListener("click", () => this.select(node, item));
             item.addEventListener("keydown", event => {
                 if (event.key === "Enter" || event.key === " ") { event.preventDefault(); this.select(node, item); }
@@ -229,13 +233,14 @@ class NetworkMap {
         });
         item.classList.add("is-selected");
         item.setAttribute("aria-pressed", "true");
-        this.modal.querySelector("#network-map-selection").textContent = this.assetAddress(node);
+        this.modal.querySelector("#network-map-selection").textContent = node.kind === "target" ? "Target" : "Asset";
         this.details.replaceChildren();
         const parent = node.parent_id == null ? null : this.nodes.get(String(node.parent_id));
         const fields = {
-            "IP Address": node.ip, "Last Known IP": node.last_known_ip, "Type": node.type_name,
-            ...(node.kind === "target" ? {} : {"OS": node.operating_system_name}),
-            "Name": this.assetName(node),
+            "IP Address": node.ip,
+            ...(node.kind === "target" ? {} : {"Last Known IP": node.last_known_ip}),
+            ...(node.kind === "target" ? {} : {"Type": node.type_name}),
+            ...(node.kind === "target" ? {} : {"OS": node.operating_system_name, "Name": this.assetName(node)}),
             "Status": ({A: "Active", I: "Inactive", U: "Unknown"})[node.status] || node.status,
             "Parent": parent ? parent.display_name || parent.discovered_hostname || parent.ip : "None (root)",
             "Last Seen": node.last_seen ? formatDate(node.last_seen) : null,

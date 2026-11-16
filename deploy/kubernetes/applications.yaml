@@ -14,7 +14,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: dufyn-manager
-        image: docker.io/dobzinski/dufyn:manager-0.1.2
+        image: docker.io/dobzinski/dufyn:manager-0.2.2
         imagePullPolicy: IfNotPresent
         workingDir: /opt/dufyn
         env:
@@ -161,7 +161,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: dufyn-controller
-        image: docker.io/dobzinski/dufyn:controller-0.1.2
+        image: docker.io/dobzinski/dufyn:controller-0.2.2
         imagePullPolicy: IfNotPresent
         workingDir: /opt/dufyn
         env:

@@ -57,7 +57,7 @@ MEMBER_COLUMNS = """m.id,m.diagram_id,m.asset_id,m.target_id,m.created_at,
     CASE WHEN m.asset_id IS NOT NULL THEN concat_ws(' - ',host(a.ip),COALESCE(NULLIF(a.display_name,''),NULLIF(a.discovered_hostname,''))) ELSE t.fqdn END AS name,
     COALESCE(host(a.ip),t.fqdn) AS ip,host(a.last_known_ip) AS last_known_ip,t.fqdn,a.display_name,a.discovered_hostname,
     a.operating_system_id,os.name AS operating_system_name,
-    CASE WHEN m.asset_id IS NOT NULL THEN COALESCE(c.name,'Asset') ELSE 'Target' END AS type_name,
+    CASE WHEN m.asset_id IS NOT NULL THEN COALESCE(c.name,'—') ELSE 'Target' END AS type_name,
     COALESCE(a.status,t.status) AS status,COALESCE(a.last_seen,t.last_seen) AS last_seen,
     COALESCE(a.latency_ms,t.latency_ms) AS latency_ms"""
 MEMBER_JOINS = """FROM topology_diagram_member m LEFT JOIN asset a ON a.id=m.asset_id

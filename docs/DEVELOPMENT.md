@@ -11,7 +11,7 @@ Before building and publishing a release, review the version references:
   being built. Review the local `deploy/docker/.env` separately; never commit it.
 - Review the deployment manifests for image references that also need updating.
 - Once the images and release instructions are published, update
-  `releases/latest.txt` with the latest stable version, for example `0.1.2`.
+  `releases/latest.txt` with the latest stable version, for example `0.2.2`.
   The Manager reads this public file to display update notifications when
   `check_updates` is enabled. Do not advance it before the release is available.
 

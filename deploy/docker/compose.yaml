@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: docker.io/dobzinski/dufyn:database-0.1.2
+    image: docker.io/dobzinski/dufyn:database-0.2.2
     container_name: dufyn-database
     entrypoint: ["bash", "/opt/dufyn/database/control.sh"]
     command: ["postgres"]
@@ -25,7 +25,7 @@ services:
     # Database is reachable only on the Docker network.
 
   manager:
-    image: docker.io/dobzinski/dufyn:manager-0.1.2
+    image: docker.io/dobzinski/dufyn:manager-0.2.2
     container_name: dufyn-manager
     restart: unless-stopped
     security_opt:
@@ -64,7 +64,7 @@ services:
       - dufyn_backend
 
   controller:
-    image: docker.io/dobzinski/dufyn:controller-0.1.2
+    image: docker.io/dobzinski/dufyn:controller-0.2.2
     container_name: dufyn-controller
     restart: unless-stopped
     security_opt:
@@ -96,7 +96,7 @@ services:
       - dufyn_backend
 
   scanner:
-    image: docker.io/dobzinski/dufyn:scanner-0.1.2
+    image: docker.io/dobzinski/dufyn:scanner-0.2.2
     container_name: dufyn-scanner
     profiles: ["scanner"]
     depends_on:
