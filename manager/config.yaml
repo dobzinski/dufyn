@@ -5,10 +5,10 @@ access:
   session: 3600 # Seconds without user activity before signing out.
 
 password:
-  manager: false
+  manager: true
 
 logo:
-  animate: false
+  animate: true
 
 controller:
   url: "http://controller:8000"
