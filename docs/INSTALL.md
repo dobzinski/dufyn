@@ -79,6 +79,29 @@ needs a reachable Controller URL and port access. See [HTTPS](HTTPS.md) for a
 private CA, [Scanner execution](SCANS.md) for modes and partial scans,
 [DNS inventory](DNS.md) for zone imports, and the [public API](API.md) for monitoring.
 
+### Continuous Scanner
+
+To repeat collection cycles, set `execution.mode: continuous` in
+`scanner/config.yaml`. Use `execution.interval_seconds` to configure the
+interval between cycles. Complete Scanner enrollment before starting it.
+
+From the project root, start the Scanner in the background:
+
+```sh
+docker compose -f deploy/docker/compose.yaml up -d --no-deps scanner
+```
+
+After changing its token or configuration, recreate the Scanner to reload it:
+
+```sh
+docker compose -f deploy/docker/compose.yaml up -d --force-recreate --no-deps scanner
+```
+
+These commands assume the Controller is already running. They use the published
+image; configuration changes do not require rebuilding. The supplied Scanner
+service has `restart: "no"`, so it does not restart automatically after an exit
+or Docker restart. See [Scanner execution](SCANS.md) for scheduling details.
+
 ### Uninstall using Docker
 
 Uninstall Dufyn: remove containers, images, and volumes.

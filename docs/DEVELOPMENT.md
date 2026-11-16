@@ -11,7 +11,7 @@ Before building and publishing a release, review the version references:
   being built. Review the local `deploy/docker/.env` separately; never commit it.
 - Review the deployment manifests for image references that also need updating.
 - Once the images and release instructions are published, update
-  `releases/latest.txt` with the latest stable version, for example `0.2.2`.
+  `releases/latest.txt` with the latest stable version, for example `0.1.2`.
   The Manager reads this public file to display update notifications when
   `check_updates` is enabled. Do not advance it before the release is available.
 
@@ -100,3 +100,26 @@ Compose mounts `scanner/config.yaml` read-only into the container. Changing its
 token or settings requires a new Scanner execution, not an image rebuild.
 Recreate a running continuous Scanner to load changed configuration. Rebuild
 when application code, dependencies or the image base changes.
+
+## Rebuild after code changes
+
+Run these commands from the project root after changing Manager code,
+templates or static files:
+
+```sh
+docker compose -f deploy/docker/compose.dev.yaml build manager
+docker compose -f deploy/docker/compose.dev.yaml up -d --no-deps manager
+```
+
+For Controller changes, replace `manager` with `controller`.
+
+For a one-off Scanner execution:
+
+```sh
+docker compose -f deploy/docker/compose.dev.yaml build scanner
+docker compose -f deploy/docker/compose.dev.yaml run --rm scanner
+```
+
+Configuration files mounted as volumes do not require rebuilding.
+Restart or recreate the affected service to reload its configuration.
+After changing browser assets, refresh the page with Ctrl+F5.
