@@ -12,6 +12,7 @@ from cryptography import x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import pkcs12
 from cryptography.x509.oid import ExtendedKeyUsageOID, ExtensionOID, NameOID
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response
@@ -393,6 +394,78 @@ def download_ca(record_id: int, artifact: Literal["certificate", "key", "chain"]
 @router.get("/api/selfsignedcerts/{record_id}/download/{artifact}")
 def download_server_certificate(record_id: int, artifact: Literal["certificate", "key", "chain"]):
     return download_certificate(record_id, artifact, authorities=None)
+
+
+class PfxExport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    password: SecretStr = Field(min_length=1, max_length=1024)
+    password_confirmation: SecretStr = Field(min_length=1, max_length=1024)
+    legacy: bool = False
+
+    @model_validator(mode="after")
+    def matching_passwords(self):
+        if self.password.get_secret_value() != self.password_confirmation.get_secret_value():
+            raise ValueError("PFX passwords must match")
+        if len(self.password.get_secret_value().encode("utf-8")) > 1024:
+            raise ValueError("PFX password must not exceed 1024 UTF-8 bytes")
+        return self
+
+
+def export_pfx(record_id: int, data: PfxExport):
+    with get_connection() as connection:
+        connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+        row = connection.execute(
+            "SELECT id,parent_id,name,certificate_pem,private_key_pem FROM managed_certificate WHERE id=%s AND kind='server'",
+            (record_id,),
+        ).fetchone()
+        if row is None:
+            raise HTTPException(404, "Server certificate not found")
+        certificate = x509.load_pem_x509_certificate(bytes(row["certificate_pem"]))
+        key = read_private_key(row["private_key_pem"], key_password())
+        chain = []
+        parent_id = row["parent_id"]
+        seen = {row["id"]}
+        while parent_id is not None:
+            if parent_id in seen:
+                raise HTTPException(409, "Invalid CA hierarchy")
+            seen.add(parent_id)
+            parent = connection.execute(
+                "SELECT id,parent_id,certificate_pem FROM managed_certificate WHERE id=%s", (parent_id,),
+            ).fetchone()
+            if parent is None:
+                raise HTTPException(409, "Incomplete CA chain")
+            chain.append(x509.load_pem_x509_certificate(bytes(parent["certificate_pem"])))
+            parent_id = parent["parent_id"]
+    password = data.password.get_secret_value().encode("utf-8")
+    encryption = serialization.BestAvailableEncryption(password)
+    if data.legacy:
+        encryption = (serialization.PrivateFormat.PKCS12.encryption_builder()
+            .kdf_rounds(50000).key_cert_algorithm(pkcs12.PBES.PBESv1SHA1And3KeyTripleDESCBC)
+            .hmac_hash(hashes.SHA1()).build(password))
+    try:
+        content = pkcs12.serialize_key_and_certificates(row["name"].encode("utf-8"), key, certificate, chain, encryption)
+    except (ValueError, UnsupportedAlgorithm):
+        raise HTTPException(422, "Unable to export PFX with the selected settings") from None
+    filename = (re.sub(r"[^A-Za-z0-9._-]+", "-", row["name"]).strip(".-") or "certificate") + "-" + str(row["id"]) + ".pfx"
+    return Response(content=content, media_type="application/x-pkcs12", headers={
+        "Content-Disposition": 'attachment; filename="' + filename + '"',
+        "Cache-Control": "no-store", "Pragma": "no-cache", "X-Content-Type-Options": "nosniff",
+    })
+
+
+@router.post("/api/selfsignedcerts/{record_id}/export/pfx")
+async def receive_pfx_export(record_id: int, request: Request):
+    body = bytearray()
+    async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > 32 * 1024:
+            raise HTTPException(413, "PFX export request is too large")
+    try:
+        data = PfxExport.model_validate_json(bytes(body))
+    except ValidationError:
+        # Never echo submitted passwords through validation error details.
+        raise HTTPException(422, "Provide matching nonempty PFX passwords of at most 1024 UTF-8 bytes and a valid legacy option") from None
+    return await run_in_threadpool(export_pfx, record_id, data)
 
 
 MAX_IMPORT_FILE_BYTES = 256 * 1024

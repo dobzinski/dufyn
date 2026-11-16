@@ -1556,6 +1556,14 @@ body {
     background: currentColor;
 }
 
+.row-actions-menu button[hidden] { display: none; }
+
+.certificate-pfx-icon {
+    mask-image: url("/static/icons/certificate-2.svg");
+    -webkit-mask-image: url("/static/icons/certificate-2.svg");
+    background: currentColor;
+}
+
 .certificate-file-icon {
     mask-image: url("/static/icons/lock.svg");
     -webkit-mask-image: url("/static/icons/lock.svg");

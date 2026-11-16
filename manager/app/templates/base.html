@@ -4,8 +4,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{{ page_title }} | DUFYN</title>
-        <link rel="stylesheet" href="/static/css/app.css?v=45">
-        <link rel="stylesheet" href="/static/css/table.css?v=11">
+        <link rel="stylesheet" href="/static/css/app.css?v=46">
+        <link rel="stylesheet" href="/static/css/table.css?v=13">
         <link rel="stylesheet" href="/static/css/form.css?v=30">
         <link rel="icon" type="image/png" href="/static/favicon/favicon.png">
         {% if page in ['base64', 'subnet', 'time', 'certificate-inspector', 'texts'] %}<link rel="stylesheet" href="/static/css/tool-results.css?v=5">{% endif %}
@@ -244,6 +244,7 @@
             <button data-action="download-certificate" class="row-action-custom" type="button" role="menuitem"><span class="certificate-file-icon action-icon" aria-hidden="true"></span>Certificate (.crt)</button>
             <button data-action="download-chain" class="row-action-custom" type="button" role="menuitem"><span class="fullchain-icon action-icon" aria-hidden="true"></span>Full chain (.pem)</button>
             <button data-action="download-key" class="row-action-custom" type="button" role="menuitem"><span class="cacerts-icon action-icon" aria-hidden="true"></span>Private key (.key)</button>
+            <button data-action="export-pfx" class="row-action-custom" type="button" role="menuitem" hidden><span class="certificate-pfx-icon action-icon" aria-hidden="true"></span>Export to PFX</button>
             {% else %}
             <button data-action="edit" class="row-action-primary" type="button" role="menuitem" data-button-icon="edit">Edit</button>
             {% endif %}

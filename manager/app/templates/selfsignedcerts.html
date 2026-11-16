@@ -92,8 +92,26 @@
         </div>
     </section>
     {% include "certificate-view-modal.html" %}
+    <dialog id="pfx-modal" class="confirm-modal" aria-labelledby="pfx-title" aria-describedby="pfx-description">
+        <h2 id="pfx-title">Export to PFX</h2>
+        <p id="pfx-description">Export the server certificate, private key and CA chain protected by your PFX password.</p>
+        <form id="pfx-form">
+            <div class="form">
+                <label for="pfx-password">PFX password</label>
+                <input id="pfx-password" name="password" type="password" required maxlength="1024" autocomplete="new-password" autofocus>
+                <label for="pfx-confirmation">Confirm PFX password</label>
+                <input id="pfx-confirmation" name="password_confirmation" type="password" required maxlength="1024" autocomplete="new-password">
+            </div>
+            <label class="scanner-network-option"><input name="legacy" type="checkbox"><span>Legacy compatibility (older environments)</span></label>
+            <p id="pfx-message" class="message" role="status" aria-live="polite"></p>
+            <div class="form-actions">
+                <button id="pfx-cancel" class="secondary-button" type="button" data-button-icon="cancel">Cancel</button>
+                <button id="pfx-export" class="secondary-button form-primary-button" type="submit" data-button-icon="download">Export</button>
+            </div>
+        </form>
+    </dialog>
 {% endblock %}
 {% block scripts %}
     <script src="/static/js/certificate-view.js?v=1"></script>
-    <script src="/static/js/selfsignedcerts.js?v=4"></script>
+    <script src="/static/js/selfsignedcerts.js?v=5"></script>
 {% endblock %}

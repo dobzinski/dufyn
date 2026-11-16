@@ -385,6 +385,7 @@
 .table-controls[hidden],
 .table-pagination[hidden] { display: none; }
 
-/* Opt-in recent-inventory rows; the hover remains darker than their base color. */
-.data-table tbody tr.table-newer { background: color-mix(in srgb, var(--primary) 20%, var(--surface)); }
-.data-table tbody tr.table-newer:hover { background: color-mix(in srgb, var(--primary) 28%, var(--surface)); }
+/* Inset marker preserves cell widths, number alignment and the shared row hover. */
+.data-table tbody tr.table-newer > td:first-child {
+    box-shadow: inset 3px 0 0 var(--primary);
+}

@@ -90,6 +90,7 @@ class PkiPage extends RecordPage {
         const record = this.records.find(item => String(item.id) === button.dataset.recordId);
         if (!record) return;
         this.chainAction ||= this.menu.querySelector('[data-action="download-chain"]');
+        this.menu.querySelector('[data-action="export-pfx"]').hidden = record.kind !== "server";
         if (record.kind === "root") {
             this.chainAction.remove();
         } else {
@@ -168,6 +169,80 @@ for (const artifact of ["certificate", "key", "chain"]) {
 }
 
 attachCertificateView(pkiPage);
+
+const pfxModal = document.getElementById("pfx-modal");
+const pfxForm = document.getElementById("pfx-form");
+const pfxMessage = document.getElementById("pfx-message");
+const pfxExport = document.getElementById("pfx-export");
+const pfxCancel = document.getElementById("pfx-cancel");
+let pfxRecord = null;
+let pfxSaving = false;
+
+pfxCancel.addEventListener("click", () => pfxModal.close());
+pfxModal.addEventListener("cancel", event => {
+    if (pfxSaving) event.preventDefault();
+});
+pfxModal.addEventListener("close", () => {
+    pfxForm.reset();
+    pfxForm.elements.password_confirmation.setCustomValidity("");
+    pfxRecord = null;
+    showMessage(pfxMessage);
+    pkiPage.deleting = false;
+});
+for (const input of [pfxForm.elements.password, pfxForm.elements.password_confirmation]) {
+    input.addEventListener("input", () => pfxForm.elements.password_confirmation.setCustomValidity(""));
+}
+pkiPage.menu.querySelector('[data-action="export-pfx"]').addEventListener("click", () => {
+    if (pkiPage.deleting) return;
+    const record = pkiPage.selectedRecord();
+    pkiPage.closeActions(true);
+    if (!record || record.kind !== "server") return;
+    pfxRecord = record;
+    pkiPage.deleting = true;
+    pfxModal.querySelector("h2").textContent = `Export to PFX: ${record.name}`;
+    pfxModal.showModal();
+});
+pfxForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (pfxSaving || !pfxRecord) return;
+    const password = pfxForm.elements.password.value;
+    const confirmation = pfxForm.elements.password_confirmation;
+    if (password !== confirmation.value) {
+        confirmation.setCustomValidity("PFX passwords must match.");
+        confirmation.reportValidity();
+        return;
+    }
+    pfxSaving = true;
+    pfxExport.disabled = true;
+    pfxCancel.disabled = true;
+    showMessage(pfxMessage, "Exporting PFX...", "info");
+    try {
+        const response = await fetch(`${pkiEndpoint}/${pfxRecord.id}/export/pfx`, {
+            method: "POST", headers: {"Content-Type": "application/json"}, cache: "no-store",
+            body: JSON.stringify({password, password_confirmation: confirmation.value, legacy: pfxForm.elements.legacy.checked}),
+        });
+        if (!response.ok) {
+            let error = {};
+            try { error = await response.json(); } catch { /* A proxy may return HTML. */ }
+            throw new Error(typeof error.detail === "string" ? error.detail : "Unable to export PFX. Please retry.");
+        }
+        const url = URL.createObjectURL(await response.blob());
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = response.headers.get("Content-Disposition")?.match(/filename="([^"]+)"/)?.[1] || "certificate.pfx";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        pfxModal.close();
+    } catch (error) {
+        showMessage(pfxMessage, error.message, "error");
+    } finally {
+        pfxSaving = false;
+        pfxExport.disabled = false;
+        pfxCancel.disabled = false;
+    }
+});
 
 for (const button of pkiForm.querySelectorAll("[data-pki-file]")) {
     const input = pkiForm.elements.namedItem(button.dataset.pkiFile);
