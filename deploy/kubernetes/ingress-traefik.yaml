@@ -1,3 +1,48 @@
+# Middleware HTTP -> HTTPS
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: dufyn
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+# Ingress HTTP - Redirect
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dufyn-http-redirect
+  namespace: dufyn
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: dufyn-redirect-https@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: dufyn.example.test
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dufyn-manager
+                port:
+                  number: 8000
+    - host: dufyn-api.example.test
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dufyn-controller
+                port:
+                  number: 8000
+---
+# Manager - HTTPS
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -24,6 +69,7 @@ spec:
                 port:
                   number: 8000
 ---
+# Controller - HTTPS
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
